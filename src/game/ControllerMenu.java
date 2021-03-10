@@ -1,14 +1,22 @@
 package game;
 
-import game.myAssets.Card;
-import game.myAssets.SpecialCard;
+import game.myAssets.cards.ACard;
+import game.myAssets.cards.RegularCard;
+import javafx.fxml.FXML;
+
+import java.io.IOException;
 
 public class ControllerMenu
 {
+    @FXML
+    private void switchToSecondary() throws IOException
+    {
+        Main.setRoot("game_board");
+    }
     public void test()
     {
-        Card aaaa = new SpecialCard(SpecialCard.Type.CH_COLOR);
-        System.out.println(aaaa.getDigit());
-        System.out.println(((SpecialCard)aaaa).getType());
+        ACard card = new RegularCard(9, ACard.Color.BLACK);
+        System.out.println(((RegularCard)card).getDigit());
+        System.out.println(card.getColor());
     }
 }

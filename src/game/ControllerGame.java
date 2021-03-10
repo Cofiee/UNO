@@ -1,5 +1,6 @@
-package game.myAssets;
+package game;
 
 public class ControllerGame
 {
+
 }

@@ -1,8 +1,6 @@
 package game.myAssets;
 
-import game.myAssets.Card;
-import game.myAssets.Player;
-import game.myAssets.SpecialCard;
+import game.myAssets.cards.*;
 
 import java.util.Collections;
 import java.util.Stack;
@@ -10,40 +8,97 @@ import java.util.Vector;
 
 public class EngineGame
 {
-    int numberOfPlayers;
-    Player[] player;
-    Stack<Card> table;
-    Vector<Card> deck;
-
-    Card.Color topColor;
-    int topDigit;
-
+    Player[] players;
     enum Direction
     {
         CLOCKWISE,
         COUNTERCLOCKWISE
     }
     Direction direction;
-    int cycle;
+    int iLastPlayer;
+    int iActualPlayer;
+    Stack<ACard> table;
+    Vector<ACard> deck;
+    RegularCard.Color topColor;
 
     public EngineGame(){}
-    public void  prepareGame(){}
-    public void prepareDeck(){}
+    public Player[] getPlayers()
+    {
+        return players;
+    }
+    public int getIActualPlayer()
+    {
+        return iActualPlayer;
+    }
+    public Player ActualPlayer()
+    {
+        return players[iActualPlayer];
+    }
+    public Direction getDirection()
+    {
+        return direction;
+    }
+    public RegularCard.Color getTopColor()
+    {
+        return topColor;
+    }
+
+    public void  prepareGame()
+    {
+    }
+    public void prepareDeck()
+    {
+        deck.clear();
+        for(ACard.Color color : ACard.Color.values())
+        {
+            if(color == ACard.Color.BLACK) break;
+            for (int i = 0; i < 10; ++i)
+            {
+                deck.add(new RegularCard(i, color));
+            }
+            deck.add(new StopCard(color));
+            deck.add(new StopCard(color));
+            deck.add(new SwitchCard(color));
+            deck.add(new SwitchCard(color));
+            deck.add(new TakeTwoCard(color));
+            deck.add(new TakeTwoCard(color));
+        }
+        for(int i = 0; i < 4; ++i)
+        {
+            deck.add(new ChColorCard());
+            deck.add(new TakeFourCard());
+        }
+    }
+    public Player nextPLayer()
+    {
+        switch (direction)
+        {
+            case CLOCKWISE:
+                if(iActualPlayer == iLastPlayer) return players[0];
+                else return players[iActualPlayer + 1];
+            case COUNTERCLOCKWISE:
+                if(iActualPlayer == 0) return players[iLastPlayer];
+                else return players[iActualPlayer - 1];
+        }
+        return null;
+    }
     public void clearTable()
     {
-        Card topCard = table.pop();
+        ACard topCard = table.pop();
         deck.addAll(table);
         Collections.shuffle(deck);
         table.clear();
         table.push(topCard);
     }
-    public int nextPLayer()
+    public void switchDirection()
     {
-        if(direction == Direction.CLOCKWISE && cycle == 3) return 0;
-        if(direction == Direction.COUNTERCLOCKWISE && cycle == 0) return 3;
-        if (direction == Direction.CLOCKWISE) return cycle + 1;
-        else return cycle - 1;
+        if(direction == Direction.CLOCKWISE)
+            direction = Direction.COUNTERCLOCKWISE;
+        else
+            direction = Direction.CLOCKWISE;
+        //endTurn();
     }
+    /*
     public void beginTurn()
     {
         if(player[cycle].isFrozen())
@@ -57,6 +112,7 @@ public class EngineGame
     }
     public void endGame(){}
     public void showHand(){} //??ZOBACZE JESZCZE JAK WYGLADA SPRAWA Z WIDOKAMI
+
     public class Actions
     {
         public void putCardOnTable(){} // TO DOPIERO PO USTALNIU JAK BEDA SIE WYSWIETLAC KARTY
@@ -119,13 +175,6 @@ public class EngineGame
         {
             //FXOWY WYBOR KOLOROW
         }
-        public void reverseDirection()
-        {
-            if(direction == Direction.CLOCKWISE)
-                direction = Direction.COUNTERCLOCKWISE;
-            else
-                direction = Direction.CLOCKWISE;
-            endTurn();
-        }
     }
+    */
 }

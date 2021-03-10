@@ -1,11 +1,13 @@
 package game.myAssets;
 
+import game.myAssets.cards.RegularCard;
+
 import java.util.Vector;
 
 public class Player
 {
     String name;
-    Vector<Card> hand;
+    Vector<RegularCard> hand;
 
     boolean Frozen;
 
@@ -14,7 +16,7 @@ public class Player
     {
         return name;
     }
-    public Vector<Card> getHand()
+    public Vector<RegularCard> getHand()
     {
         return hand;
     }
