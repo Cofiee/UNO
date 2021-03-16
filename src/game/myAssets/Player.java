@@ -1,22 +1,21 @@
 package game.myAssets;
 
-import game.myAssets.cards.RegularCard;
+import game.myAssets.cards.ACard;
 
 import java.util.Vector;
 
 public class Player
 {
     String name;
-    Vector<RegularCard> hand;
+    Vector<ACard> hand;
 
     boolean Frozen;
 
-    boolean isAI;
     public String getName()
     {
         return name;
     }
-    public Vector<RegularCard> getHand()
+    public Vector<ACard> getHand()
     {
         return hand;
     }

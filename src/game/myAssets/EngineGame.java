@@ -1,5 +1,6 @@
 package game.myAssets;
 
+import game.ControllerGame;
 import game.myAssets.cards.*;
 
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.Vector;
 
 public class EngineGame
 {
+    private ControllerGame controllerGame;
     Player[] players;
     enum Direction
     {
@@ -20,8 +22,12 @@ public class EngineGame
     Stack<ACard> table;
     Vector<ACard> deck;
     RegularCard.Color topColor;
+    int numberOfTakenCards;
 
-    public EngineGame(){}
+    public EngineGame(ControllerGame controller)
+    {
+        this.controllerGame = controller;
+    }
     public Player[] getPlayers()
     {
         return players;
@@ -42,9 +48,21 @@ public class EngineGame
     {
         return topColor;
     }
+    public void setTopColor(RegularCard.Color color){this.topColor = color;}
+    public ControllerGame getControllerGame(){return controllerGame;}
 
     public void  prepareGame()
     {
+        table.clear();
+        prepareDeck();
+        Collections.shuffle(deck);
+        for(Player player : players)
+        {
+            player.getHand().clear();
+            for(int i = 0; i < 7; ++i)
+                player.getHand().add(deck.remove(0));
+        }
+        table.add(deck.remove(0));
     }
     public void prepareDeck()
     {
@@ -90,91 +108,92 @@ public class EngineGame
         table.clear();
         table.push(topCard);
     }
+    public void beginTurn()
+    {
+        if(ActualPlayer().isFrozen())
+        {
+            ActualPlayer().unfreeze();
+            //endTurn();
+        }
+        if(numberOfTakenCards > 0)
+        {
+            takeCards();
+            //endTurn();
+        }
+    }
     public void switchDirection()
     {
         if(direction == Direction.CLOCKWISE)
             direction = Direction.COUNTERCLOCKWISE;
         else
             direction = Direction.CLOCKWISE;
-        //endTurn();
     }
-    /*
-    public void beginTurn()
+    public void cardOnTable(ACard card)
     {
-        if(player[cycle].isFrozen())
-            endTurn();
+        if(card instanceof ISpecialCard)
+        {
+            ((ISpecialCard) card).action(this);
+        }
+    }
+    public void takeOne()
+    {
+        ACard firstCard;
+        if(deck.isEmpty())
+            clearTable();
+        firstCard = deck.remove(0);
+        if(topColor == firstCard.getColor())
+        {
+            ///THROW ON TABLE
+        }
+        else
+        {
+            ActualPlayer().getHand().add(firstCard);
+        }
+    }
+    public void takeCards()
+    {
+        ACard firstCard;
+        if(deck.isEmpty())
+            clearTable();
+        firstCard = deck.remove(0);
+        if(firstCard instanceof TakeTwoCard)
+        {
+            ///KARTA NA STOL
+            return;
+        }
+        else
+        {
+            --numberOfTakenCards;
+            ActualPlayer().getHand().add(firstCard);
+            while(numberOfTakenCards > 0)
+            {
+                --numberOfTakenCards;
+                if(deck.isEmpty())
+                    clearTable();
+                ActualPlayer().getHand().add(deck.remove(0));
+            }
+        }
+    }
+    public void changeColor(ACard.Color color)
+    {
+        this.topColor = color;
     }
     public void endTurn()
     {
-        if(table.peek().getColor() != Card.Color.BLACK)
-            topColor = table.peek().getColor();
-        player[cycle].unfreeze();
+        if(direction == Direction.CLOCKWISE)
+        {
+            if(iActualPlayer == iLastPlayer)
+                iActualPlayer = 0;
+            else
+                iActualPlayer++;
+        }
+        else
+        {
+            if(iActualPlayer == 0)
+                iActualPlayer = iLastPlayer;
+            else
+                iActualPlayer--;
+        }
     }
     public void endGame(){}
-    public void showHand(){} //??ZOBACZE JESZCZE JAK WYGLADA SPRAWA Z WIDOKAMI
-
-    public class Actions
-    {
-        public void putCardOnTable(){} // TO DOPIERO PO USTALNIU JAK BEDA SIE WYSWIETLAC KARTY
-        public void takeOne()
-        {
-            if(deck.isEmpty())
-                clearTable();
-            player[cycle].getHand().add(deck.remove(0));
-            endTurn();
-        }
-        public void takeTwo()
-        {
-            Card firstCard;
-            if(deck.isEmpty())
-                clearTable();
-            firstCard = deck.remove(0);
-            if (firstCard.getDigit() == -1)
-            {
-                if (((SpecialCard) firstCard).getType() == SpecialCard.Type.TAKE_TWO)
-                {
-                    table.add(firstCard);
-                    endTurn();
-                }
-            }
-            player[cycle].getHand().add(firstCard);
-            if(deck.isEmpty())
-                clearTable();
-            player[cycle].getHand().add(deck.remove(0));
-            endTurn();
-        }
-        public void takeFour()
-        {
-            Card firstCard;
-            if(deck.isEmpty())
-                clearTable();
-            firstCard = deck.remove(0);
-            if (firstCard.getDigit() == -1)
-            {
-                if (((SpecialCard) firstCard).getType() == SpecialCard.Type.TAKE_TWO)
-                {
-                    table.add(firstCard);
-                    endTurn();
-                }
-            }
-            player[cycle].getHand().add(firstCard);
-            for(int i = 3; i > 0; --i)
-            {
-                if(deck.isEmpty())
-                    clearTable();
-                player[cycle].getHand().add(deck.remove(0));
-            }
-            endTurn();
-        }
-        public void stop()
-        {
-            player[nextPLayer()].freeze();
-            endTurn();
-        }
-        public void changeColour()
-        {
-            //FXOWY WYBOR KOLOROW
-        }
-    }
-    */
 }
