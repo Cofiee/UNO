@@ -2,23 +2,42 @@ package game;
 
 import game.myAssets.EngineGame;
 import game.myAssets.cards.ACard;
-import game.visualAssets.PickColorDialog;
+import game.dialogs.PickColorDialog;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+
 public class ControllerGame
 {
     EngineGame engineGame;
 
     @FXML
-    Circle TopColor;
+    public Circle top_color;
 
-    ControllerGame()
+    @FXML
+    public GridPane gp_table;
+
+    public ControllerGame()
     {
-        engineGame = new EngineGame(this);
+    }
+    @FXML
+    void initialize()
+    {
+        try
+        {
+            updateTopCard();
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getCause());
+        }
     }
     public void chColorAlert()
     {
@@ -62,14 +81,25 @@ public class ControllerGame
             default:
                 color = new Color(0.0,0.0,0.0,100.0);
         }
-        TopColor.setFill(color);
+        top_color.setFill(color);
     }
-    public void updateTopCard()
+    public void updateTopCard() throws  Exception
+    {
+        Node node = FXMLLoader.load(getClass().getResource("myAssets/cards/card.fxml"));
+        gp_table.add(node, 1, 1);
+    }
+    public void updatePlayerHands()
     {
 
     }
-    public void updatePlayersHands()
+    public void chooseCard()
     {
-
+        //MODYFIKACJA ID
+        engineGame.cardOnTable(1);
     }
+    public void takeOneCard()
+    {
+        engineGame.takeOne();
+    }
+
 }

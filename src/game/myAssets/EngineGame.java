@@ -48,9 +48,18 @@ public class EngineGame
     {
         return topColor;
     }
-    public void setTopColor(RegularCard.Color color){this.topColor = color;}
+    public void setTopColor(RegularCard.Color color)
+    {
+        this.topColor = color;
+    }
     public ControllerGame getControllerGame(){return controllerGame;}
-
+    public String getTopDigit()
+    {
+        if(table.peek() instanceof RegularCard)
+            return  String.valueOf(((RegularCard) table.peek()).getDigit());
+        else
+            return table.peek().getClass().getSimpleName();
+    }
     public void  prepareGame()
     {
         table.clear();
@@ -128,12 +137,15 @@ public class EngineGame
         else
             direction = Direction.CLOCKWISE;
     }
-    public void cardOnTable(ACard card)
+    public void cardOnTable(int id)
     {
+        ACard card = ActualPlayer().getHand().elementAt(id);
+        ACard topCard = table.peek();
+        //DRZEWO DECYZYJNE
+        table.add(card);
+        ActualPlayer().getHand().remove(id);
         if(card instanceof ISpecialCard)
-        {
             ((ISpecialCard) card).action(this);
-        }
     }
     public void takeOne()
     {

@@ -1,11 +1,8 @@
-package game;
+package MainMenu;
 
-import game.myAssets.cards.ACard;
-import game.myAssets.cards.ISpecialCard;
-import game.myAssets.cards.RegularCard;
-import game.myAssets.cards.StopCard;
+import game.*;
+import game.myAssets.cards.*;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 
 import java.io.IOException;
 
@@ -14,9 +11,8 @@ public class ControllerMenu
     @FXML
     private void switchToSecondary() throws IOException
     {
-        Main.setRoot("game_board");
+        Main.setRoot("../game/game_board.fxml");
     }
-
     public void test()
     {
         /*
@@ -27,6 +23,7 @@ public class ControllerMenu
             System.out.println(((RegularCard) card).getDigit());
             System.out.println(card.getColor());
         }*/
+        /*
         ACard card = new StopCard(ACard.Color.BLUE);
         if(card instanceof ISpecialCard)
         {
@@ -38,5 +35,8 @@ public class ControllerMenu
         alert.setHeaderText("Look, an Information Dialog");
         alert.setContentText("I have a great message for you!");
         alert.showAndWait();
+         */
+        TakeTwoCard card = new TakeTwoCard(ACard.Color.RED);
+        System.out.println(card.getClass().getSimpleName());
     }
 }
