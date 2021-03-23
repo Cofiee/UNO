@@ -1,6 +1,7 @@
 package game.myAssets;
 
 import game.myAssets.cards.ACard;
+import javafx.scene.Parent;
 
 import java.util.Vector;
 
@@ -8,9 +9,9 @@ public class Player
 {
     String name;
     Vector<ACard> hand;
-
     boolean Frozen;
 
+    public Player(){this.hand = new Vector<>();}
     public String getName()
     {
         return name;

@@ -19,14 +19,20 @@ public class EngineGame
     Direction direction;
     int iLastPlayer;
     int iActualPlayer;
-    Stack<ACard> table;
-    Vector<ACard> deck;
+    Stack<ACard> table = new Stack<>();
+    Vector<ACard> deck = new Vector<>();
     RegularCard.Color topColor;
     int numberOfTakenCards;
 
     public EngineGame(ControllerGame controller)
     {
         this.controllerGame = controller;
+        players = new Player[4];
+        for (Player player:
+             players)
+        {
+            player = new Player();
+        }
     }
     public Player[] getPlayers()
     {
@@ -62,6 +68,7 @@ public class EngineGame
     }
     public void  prepareGame()
     {
+        // tmp
         table.clear();
         prepareDeck();
         Collections.shuffle(deck);
@@ -208,4 +215,40 @@ public class EngineGame
         }
     }
     public void endGame(){}
+    public String parseCard(ACard card)
+    {
+        String fileName = new String();
+        if(card instanceof TakeFourCard)
+            fileName += "wild_pick_four_large";
+        else if(card instanceof ChColorCard)
+            fileName += "wild_colora_changer_large";
+        else
+        {
+           switch(card.getColor())
+           {
+               case RED:
+                   fileName += "red_";
+                   break;
+               case BLUE:
+                   fileName += "blue_";
+                   break;
+               case YELLOW:
+                   fileName += "yellow_";
+                   break;
+               case GREEN:
+                   fileName += "green_";
+                   break;
+           }
+           if(card instanceof RegularCard)
+               fileName += Integer.toString(((RegularCard) card).getDigit()) + "_";
+           else if(card instanceof StopCard)
+               fileName += "skip_";
+           else if (card instanceof TakeTwoCard)
+               fileName += "picker_";
+           else
+               fileName += "reverse_";
+           fileName += "large";
+        }
+        return fileName += ".png";
+    }
 }
