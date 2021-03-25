@@ -1,3 +1,7 @@
+/*
+* Autor: Rafał Topolski
+* Cel: obsługa logiki gry
+* */
 package game.myAssets;
 
 import game.ControllerGame;
@@ -16,23 +20,27 @@ public class EngineGame
         CLOCKWISE,
         COUNTERCLOCKWISE
     }
-    Direction direction;
+    Direction direction = Direction.CLOCKWISE;
     int iLastPlayer;
-    int iActualPlayer;
+    int iActualPlayer = 0;
     Stack<ACard> table = new Stack<>();
     Vector<ACard> deck = new Vector<>();
     RegularCard.Color topColor;
-    int numberOfTakenCards;
+    int numberOfTakenCards = 0;
 
     public EngineGame(ControllerGame controller)
     {
         this.controllerGame = controller;
-        players = new Player[4];
-        for (Player player:
-             players)
-        {
-            player = new Player();
-        }
+    }
+    public void initializePlayers(int numberOfPlayers, int numberOfAi)
+    {
+        if(numberOfPlayers > 4) return;//throw new Exception();
+        if(numberOfAi > 4 - numberOfPlayers) return;
+        players = new Player[numberOfPlayers + numberOfAi];
+        this.iLastPlayer = players.length - 1;
+        for(int i = 0; i < numberOfPlayers; ++i)
+            players[i] = new Player();
+        //AI
     }
     public Player[] getPlayers()
     {
@@ -50,7 +58,7 @@ public class EngineGame
     {
         return direction;
     }
-    public RegularCard.Color getTopColor()
+    public ACard.Color getTopColor()
     {
         return topColor;
     }
@@ -66,9 +74,13 @@ public class EngineGame
         else
             return table.peek().getClass().getSimpleName();
     }
+    public ACard getTopCard()
+    {
+        return table.peek();
+    }
     public void  prepareGame()
     {
-        // tmp
+        initializePlayers(4,0);
         table.clear();
         prepareDeck();
         Collections.shuffle(deck);
@@ -79,6 +91,7 @@ public class EngineGame
                 player.getHand().add(deck.remove(0));
         }
         table.add(deck.remove(0));
+        this.topColor = table.peek().getColor();
     }
     public void prepareDeck()
     {
