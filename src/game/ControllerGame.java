@@ -6,26 +6,22 @@ package game;
 
 import game.myAssets.EngineGame;
 import game.myAssets.cards.ACard;
-import game.dialogs.PickColorDialog;
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import javafx.scene.image.Image;
 
-import java.awt.*;
 import java.io.FileInputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Vector;
 
 public class ControllerGame
@@ -46,40 +42,50 @@ public class ControllerGame
     VBox player_position_3_vbox;
     @FXML
     Button button_take_card;
-    //public GridPane gp_table;
 
     public ControllerGame()
     {
         this.engineGame = new EngineGame(this);
-        engineGame.prepareGame();
     }
     @FXML
     void initialize()
     {
+        engineGame.prepareGame();
+        try
+        {
+            updatePlayerHands();
+        }
+        catch (Exception e)
+        {
 
+        }
     }
-    public void chColorAlert()
+    /*
+    * Metoda wyswietlajaca powiadomienie o potrzebie zmiany koloru
+    * */
+    public ACard.Color chColorAlert()
     {
-        PickColorDialog dialog = new PickColorDialog();
-        dialog.showAndWait().ifPresent(response -> {
-            if(response == "Red")
-            {
-                engineGame.changeColor(ACard.Color.RED);
-            }
-            else if(response == "Green")
-            {
-                engineGame.changeColor(ACard.Color.GREEN);
-            }
-            else if(response == "Blue")
-            {
-                engineGame.changeColor(ACard.Color.BLUE);
-            }
-            else
-            {
-                engineGame.changeColor(ACard.Color.YELLOW);
-            }
-        });
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Choose color");
+        alert.setHeaderText("Choose one color by clicking on button");
+        ButtonType buttonTypeRed = new ButtonType("Red");
+        ButtonType buttonTypeBlue = new ButtonType("Blue");
+        ButtonType buttonTypeGreen = new ButtonType("Green");
+        ButtonType buttonTypeYellow = new ButtonType("Yellow");
+        alert.getButtonTypes().setAll(buttonTypeRed, buttonTypeBlue, buttonTypeGreen, buttonTypeYellow);
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.get() == buttonTypeRed)
+            return ACard.Color.RED;
+        else if(result.get() == buttonTypeBlue)
+            return ACard.Color.BLUE;
+        else if(result.get() == buttonTypeGreen)
+            return ACard.Color.GREEN;
+        else
+            return ACard.Color.YELLOW;
     }
+    /*
+    * Metoda aktualizujaca ikone koloru gornej karty
+    * */
     public void updateColorIcon(ACard.Color myColor)
     {
         Color color;
@@ -103,8 +109,8 @@ public class ControllerGame
         top_color.setFill(color);
     }
     /*
-    Metoda wyswietlajaca karty na szczycie stolu
-     */
+    * Metoda wyswietlajaca karty na szczycie stolu
+    * */
     public void updateTopCard() throws Exception
     {
         String path = "src/game/myAssets/cards/sprites/"+engineGame.parseCard(engineGame.getTopCard());
@@ -115,15 +121,16 @@ public class ControllerGame
         card_stack.getChildren().add(imageView);
     }
     /*
-    Metoda odpowiadajaca za wyswietlanie kart graczy w polach graczy
-     */
+    * Metoda odpowiadajaca za wyswietlanie kart graczy w polach graczy
+    * Kazda karta ma zainicjalizowany event
+    * */
     public void updatePlayerHands() throws Exception
     {
-        player_position_0_hbox.getChildren().removeAll();
+        player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
         Vector<ACard> hand = engineGame.ActualPlayer().getHand();
         List<ImageView> imageViews = new LinkedList<>();
         double size = player_position_0_hbox.getWidth() / hand.size();
-
+        int id = 0;
         for (ACard card:
              hand)
         {
@@ -132,11 +139,12 @@ public class ControllerGame
             ImageView imageView = new ImageView(new Image(inputStream));
             imageView.fitHeightProperty().bind(player_position_0_hbox.heightProperty());
             imageView.setFitWidth(size);
+            imageView.setId(Integer.toString(id));
             imageView.setOnMouseClicked(new EventHandler<MouseEvent>(){
                 @Override
                 public void handle(MouseEvent event)
                 {
-                    engineGame.cardOnTable(1);
+                    engineGame.cardOnTable(Integer.parseInt(imageView.getId()));
                     try
                     {
                         updateTopCard();
@@ -148,19 +156,29 @@ public class ControllerGame
                 }
             });
             imageViews.add(imageView);
+            ++id;
         }
         player_position_0_hbox.getChildren().addAll(imageViews);
     }
+    /**/
     public void takeOneCard()
     {
         engineGame.takeOne();
-        try
-        {
-            updatePlayerHands();
-        }catch (Exception e)
-        {
-            System.out.println(e.getCause() +" \n"+ e.getMessage());
-        }
     }
-
+    /**/
+    public boolean takeOrFake(ACard card) throws Exception
+    {
+        String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
+        FileInputStream inputStream = new FileInputStream(path);
+        ImageView imageView = new ImageView(new Image(inputStream));
+        final String[] options = {"Throw it", "Take it"};
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setContentText("Do you woant throw it or keep it?");
+        alert.setTitle("Card match!");
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && (result.get() == ButtonType.OK))
+            return true;
+        else
+            return false;
+    }
 }

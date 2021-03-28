@@ -10,5 +10,9 @@ public class TakeFourCard extends ACard
         this.color = ACard.Color.BLACK;
     }
     @Override
-    public void action(EngineGame engineGame){}
+    public void action(EngineGame engineGame)
+    {
+        ACard.Color pickedColor = engineGame.getControllerGame().chColorAlert();
+        engineGame.setTopColor(pickedColor);
+    }
 }

@@ -13,7 +13,7 @@ public class ChColorCard extends ACard
     @Override
     public void action(EngineGame engineGame)
     {
-        engineGame.getControllerGame().chColorAlert();
-        engineGame.setTopColor(Color.BLUE);
+        ACard.Color pickedColor = engineGame.getControllerGame().chColorAlert();
+        engineGame.setTopColor(pickedColor);
     }
 }

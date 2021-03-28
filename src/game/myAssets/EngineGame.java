@@ -67,7 +67,7 @@ public class EngineGame
         this.topColor = color;
     }
     public ControllerGame getControllerGame(){return controllerGame;}
-    public String getTopDigit()
+    public String getTopDigitString()
     {
         if(table.peek() instanceof RegularCard)
             return  String.valueOf(((RegularCard) table.peek()).getDigit());
@@ -92,6 +92,9 @@ public class EngineGame
         }
         table.add(deck.remove(0));
         this.topColor = table.peek().getColor();
+        try{controllerGame.updateTopCard();}
+        catch (Exception e){}
+        controllerGame.updateColorIcon(topColor);
     }
     public void prepareDeck()
     {
@@ -165,32 +168,67 @@ public class EngineGame
         table.add(card);
         ActualPlayer().getHand().remove(id);
         if(card instanceof ISpecialCard)
+        {
             ((ISpecialCard) card).action(this);
+            if(card.getColor() != ACard.Color.BLACK)
+                this.topColor = table.peek().getColor();
+            else;
+                ///alert
+        }
+        try
+        {
+            controllerGame.updatePlayerHands();
+            controllerGame.updateColorIcon(this.topColor);
+            controllerGame.updateTopCard();
+        }
+        catch (Exception e)
+        {
+            //DO WYPELNIENIA
+        }
     }
+    /*
+    * Metoda pobiera jedna karte dla gracza i pyta gracza czy chce rzucic na stol czy zachowac
+    * w rece
+     */
     public void takeOne()
     {
         ACard firstCard;
         if(deck.isEmpty())
             clearTable();
         firstCard = deck.remove(0);
-        if(topColor == firstCard.getColor())
+        if(firstCard instanceof RegularCard)
         {
-            ///THROW ON TABLE
+            if(((RegularCard)firstCard).getColor() == topColor ||
+                    ((RegularCard)firstCard).getDigit() == ((RegularCard) table.peek()).getDigit())
+            {
+                try
+                {
+                    if(controllerGame.takeOrFake(firstCard))
+                        table.add(firstCard);
+                }
+                catch (Exception e)
+                {}
+            }
         }
         else
         {
             ActualPlayer().getHand().add(firstCard);
         }
     }
+    /*
+    * Metoda pobiera karty dla gracze i sprawdza czy pierwsza karta ratuje gracza od dobierania
+    * */
     public void takeCards()
     {
         ACard firstCard;
         if(deck.isEmpty())
             clearTable();
         firstCard = deck.remove(0);
-        if(firstCard instanceof TakeTwoCard)
+        if(firstCard instanceof TakeTwoCard && table.peek() instanceof TakeTwoCard ||
+            firstCard instanceof TakeFourCard && table.peek() instanceof TakeFourCard)
         {
-            ///KARTA NA STOL
+            table.add(firstCard);
+            ((ISpecialCard) firstCard).action(this);
             return;
         }
         else
