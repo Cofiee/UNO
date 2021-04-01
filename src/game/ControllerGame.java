@@ -4,6 +4,7 @@
 * */
 package game;
 
+import MainMenu.Main;
 import game.myAssets.EngineGame;
 import game.myAssets.cards.ACard;
 import javafx.event.EventHandler;
@@ -19,6 +20,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +56,7 @@ public class ControllerGame
         engineGame.prepareGame();
         try
         {
-            updatePlayerHands();
+            updatePlayerHand();
         }
         catch (Exception e)
         {
@@ -111,23 +114,33 @@ public class ControllerGame
     /*
     * Metoda wyswietlajaca karty na szczycie stolu
     * */
-    public void updateTopCard() throws Exception
+    public void updateTopCard()
     {
         String path = "src/game/myAssets/cards/sprites/"+engineGame.parseCard(engineGame.getTopCard());
-        FileInputStream inputStream = new FileInputStream(path);
-        ImageView imageView = new ImageView(new Image(inputStream));
-        imageView.fitWidthProperty().bind(card_stack.widthProperty());
-        imageView.fitHeightProperty().bind(card_stack.heightProperty());
-        card_stack.getChildren().add(imageView);
+        try
+        {
+            FileInputStream inputStream = new FileInputStream(path);
+            ImageView imageView = new ImageView(new Image(inputStream));
+            imageView.setFitHeight(300.0);
+            imageView.setFitWidth(170.0);
+            card_stack.getChildren().add(imageView);
+        }
+        catch (java.io.FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sprite not found exception");
+            alert.setHeaderText("java.io.FileNotFoundException");
+            alert.setContentText(e.getMessage());
+        }
     }
     /*
     * Metoda odpowiadajaca za wyswietlanie kart graczy w polach graczy
     * Kazda karta ma zainicjalizowany event
     * */
-    public void updatePlayerHands() throws Exception
+    public void updatePlayerHand()
     {
         player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
-        Vector<ACard> hand = engineGame.ActualPlayer().getHand();
+        Vector<ACard> hand = engineGame.actualPlayer().getHand();
         List<ImageView> imageViews = new LinkedList<>();
         double size = player_position_0_hbox.getWidth() / hand.size();
         int id = 0;
@@ -135,50 +148,107 @@ public class ControllerGame
              hand)
         {
             String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
-            FileInputStream inputStream = new FileInputStream(path);
-            ImageView imageView = new ImageView(new Image(inputStream));
-            imageView.fitHeightProperty().bind(player_position_0_hbox.heightProperty());
-            imageView.setFitWidth(size);
-            imageView.setId(Integer.toString(id));
-            imageView.setOnMouseClicked(new EventHandler<MouseEvent>(){
-                @Override
-                public void handle(MouseEvent event)
+            try
+            {
+                FileInputStream inputStream = new FileInputStream(path);
+                ImageView imageView = new ImageView(new Image(inputStream));
+                imageView.setFitHeight(300.0);
+                imageView.setFitWidth(170.0);
+                imageView.setId(Integer.toString(id));
+                imageView.setOnMouseClicked(new EventHandler<MouseEvent>()
                 {
-                    engineGame.cardOnTable(Integer.parseInt(imageView.getId()));
-                    try
+                    @Override
+                    public void handle(MouseEvent event)
                     {
+                        engineGame.cardOnTable(Integer.parseInt(imageView.getId()));
+                        try
+                        {
+                            updateTopCard();
+                        } catch (Exception e)
+                        {
+                            System.out.println(e.getMessage() + "\n" + e.getCause());
+                        }
+                        updatePlayerHand();
+                        updateColorIcon(engineGame.getTopColor());
                         updateTopCard();
-                    }catch (Exception e)
-                    {
-                        System.out.println(e.getMessage() + "\n" + e.getCause());
                     }
-                    updateColorIcon(engineGame.getTopColor());
-                }
-            });
-            imageViews.add(imageView);
+                });
+                imageViews.add(imageView);
+            }
+            catch (java.io.FileNotFoundException e)
+            {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Sprite not found exception");
+                alert.setHeaderText("java.io.FileNotFoundException");
+                alert.setContentText(e.getMessage());
+            }
             ++id;
         }
         player_position_0_hbox.getChildren().addAll(imageViews);
+    }
+    public void updateOponentsHands()
+    {
+        player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
+        player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
+        player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
     }
     /**/
     public void takeOneCard()
     {
         engineGame.takeOne();
+        this.nextTurn();
     }
     /**/
-    public boolean takeOrFake(ACard card) throws Exception
+    public boolean takeOrFake(ACard card)
     {
-        String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
-        FileInputStream inputStream = new FileInputStream(path);
-        ImageView imageView = new ImageView(new Image(inputStream));
-        final String[] options = {"Throw it", "Take it"};
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setContentText("Do you woant throw it or keep it?");
-        alert.setTitle("Card match!");
-        Optional<ButtonType> result = alert.showAndWait();
-        if(result.isPresent() && (result.get() == ButtonType.OK))
-            return true;
-        else
-            return false;
+        try
+        {
+            String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
+            InputStream inputStream = new FileInputStream(path);
+            ImageView imageView = new ImageView(new Image(inputStream));
+            final String[] options = {"Throw it", "Take it"};
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setContentText("Do you woant throw it or keep it?");
+            alert.setGraphic(imageView);
+            alert.setTitle("Card match!");
+            Optional<ButtonType> result = alert.showAndWait();
+            if(result.isPresent() && (result.get() == ButtonType.OK))
+                return true;
+            else
+                return false;
+        }catch (Exception e)
+        {}
+        return false;
+    }
+    public void nextTurn()
+    {
+        if(engineGame.endTurn())
+        {
+            try
+            {
+                switchToMainMenu();
+            }catch (Exception e)
+            {
+
+            }
+            return;
+        }
+        player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
+        //player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
+        //player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
+        //player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer() + 1) + " turn.");
+        alert.showAndWait();
+        try
+        {
+           updatePlayerHand();
+        }catch (Exception e){}
+        engineGame.beginTurn();
+    }
+    @FXML
+    private void switchToMainMenu() throws IOException
+    {
+        Main.setRoot("../MainMenu/sample.fxml");
     }
 }
