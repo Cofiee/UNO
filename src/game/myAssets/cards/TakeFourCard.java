@@ -14,5 +14,7 @@ public class TakeFourCard extends ACard
     {
         ACard.Color pickedColor = engineGame.getControllerGame().chColorAlert();
         engineGame.setTopColor(pickedColor);
+        int number = engineGame.getNumberOfTakenCards();
+        engineGame.setNumberOfTakenCards(number + 4);
     }
 }

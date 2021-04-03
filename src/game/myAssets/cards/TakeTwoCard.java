@@ -17,6 +17,7 @@ public class TakeTwoCard extends ACard
     @Override
     public void action(EngineGame engineGame)
     {
-
+        int number = engineGame.getNumberOfTakenCards();
+        engineGame.setNumberOfTakenCards(number + 2);
     }
 }

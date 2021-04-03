@@ -7,11 +7,13 @@ package game;
 import MainMenu.Main;
 import game.myAssets.EngineGame;
 import game.myAssets.cards.ACard;
+
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -22,10 +24,7 @@ import javafx.scene.image.Image;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Vector;
+import java.util.*;
 
 public class ControllerGame
 {
@@ -53,15 +52,23 @@ public class ControllerGame
     @FXML
     void initialize()
     {
+        engineGame.initializePlayers(numberOfPlayersDialog(), 0);
         engineGame.prepareGame();
-        try
-        {
-            updatePlayerHand();
-        }
-        catch (Exception e)
-        {
-
-        }
+        updatePlayerHand();
+    }
+    /*
+    * Wyswietla dialog z zapytaniem o liczbe graczy
+    * Zwraca wybrana liczbe graczy
+    * */
+    public int numberOfPlayersDialog()
+    {
+        List<Integer> choices = new ArrayList<>();
+        choices.add(2);
+        choices.add(3);
+        choices.add(4);
+        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(2, choices);
+        Optional<Integer> result = dialog.showAndWait();
+        return result.get();
     }
     /*
     * Metoda wyswietlajaca powiadomienie o potrzebie zmiany koloru
@@ -122,7 +129,7 @@ public class ControllerGame
             FileInputStream inputStream = new FileInputStream(path);
             ImageView imageView = new ImageView(new Image(inputStream));
             imageView.setFitHeight(300.0);
-            imageView.setFitWidth(170.0);
+            imageView.setFitWidth(190.0);
             card_stack.getChildren().add(imageView);
         }
         catch (java.io.FileNotFoundException e)
@@ -153,7 +160,7 @@ public class ControllerGame
                 FileInputStream inputStream = new FileInputStream(path);
                 ImageView imageView = new ImageView(new Image(inputStream));
                 imageView.setFitHeight(300.0);
-                imageView.setFitWidth(170.0);
+                imageView.setFitWidth(190.0);
                 imageView.setId(Integer.toString(id));
                 imageView.setOnMouseClicked(new EventHandler<MouseEvent>()
                 {
@@ -161,16 +168,28 @@ public class ControllerGame
                     public void handle(MouseEvent event)
                     {
                         engineGame.cardOnTable(Integer.parseInt(imageView.getId()));
-                        try
-                        {
-                            updateTopCard();
-                        } catch (Exception e)
-                        {
-                            System.out.println(e.getMessage() + "\n" + e.getCause());
-                        }
+                        updateTopCard();
                         updatePlayerHand();
                         updateColorIcon(engineGame.getTopColor());
                         updateTopCard();
+                    }
+                });
+                imageView.setOnMouseEntered(new EventHandler<MouseEvent>()
+                {
+                    @Override
+                    public void handle(MouseEvent event)
+                    {
+                        imageView.setFitWidth(200);
+                        imageView.setFitHeight(310);
+                    }
+                });
+                imageView.setOnMouseExited(new EventHandler<MouseEvent>()
+                {
+                    @Override
+                    public void handle(MouseEvent event)
+                    {
+                        imageView.setFitWidth(190);
+                        imageView.setFitHeight(300);
                     }
                 });
                 imageViews.add(imageView);
@@ -192,14 +211,20 @@ public class ControllerGame
         player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
         player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
     }
-    /**/
+    /*
+    * Inicjuje dobranie jednej karty w silniku
+    * */
     public void takeOneCard()
     {
         engineGame.takeOne();
+        updateTopCard();
+        updateColorIcon(engineGame.getTopColor());
         this.nextTurn();
     }
-    /**/
-    public boolean takeOrFake(ACard card)
+    /*
+    *
+    * */
+    public boolean matchCardDialog(ACard card)
     {
         try
         {
@@ -216,9 +241,34 @@ public class ControllerGame
                 return true;
             else
                 return false;
-        }catch (Exception e)
-        {}
+        }catch (java.io.FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sprite not found exception");
+            alert.setHeaderText("java.io.FileNotFoundException");
+            alert.setContentText(e.getMessage());
+        }
         return false;
+    }
+    public void takeCardDialog(ACard card)
+    {
+        try
+        {
+            String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
+            InputStream inputStream = new FileInputStream(path);
+            ImageView imageView = new ImageView(new Image(inputStream));
+            final String[] options = {"Throw it", "Take it"};
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setGraphic(imageView);
+            alert.setTitle("Card match!");
+            Optional<ButtonType> result = alert.showAndWait();
+        }catch (java.io.FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sprite not found exception");
+            alert.setHeaderText("java.io.FileNotFoundException");
+            alert.setContentText(e.getMessage());
+        }
     }
     public void nextTurn()
     {
@@ -234,17 +284,15 @@ public class ControllerGame
             return;
         }
         player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
-        //player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
-        //player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
-        //player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+        player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
+        player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
+        player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer() + 1) + " turn.");
         alert.showAndWait();
-        try
-        {
-           updatePlayerHand();
-        }catch (Exception e){}
-        engineGame.beginTurn();
+        if(!engineGame.beginTurn())
+            nextTurn();
+        updatePlayerHand();
     }
     @FXML
     private void switchToMainMenu() throws IOException

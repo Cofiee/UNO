@@ -68,6 +68,14 @@ public class EngineGame
         this.topColor = color;
     }
     public ControllerGame getControllerGame(){return controllerGame;}
+    public int getNumberOfTakenCards()
+    {
+        return this.numberOfTakenCards;
+    }
+    public void setNumberOfTakenCards(int number)
+    {
+        numberOfTakenCards = number;
+    }
     public String getTopDigitString()
     {
         if(table.peek() instanceof RegularCard)
@@ -81,7 +89,10 @@ public class EngineGame
     }
     public void  prepareGame()
     {
-        initializePlayers(4,0);
+        if(players == null)
+        {
+            initializePlayers(controllerGame.numberOfPlayersDialog(), 0);
+        }
         table.clear();
         prepareDeck();
         Collections.shuffle(deck);
@@ -146,19 +157,6 @@ public class EngineGame
         table.clear();
         table.push(topCard);
     }
-    public void beginTurn()
-    {
-        if(actualPlayer().isFrozen())
-        {
-            actualPlayer().unfreeze();
-            //endTurn();
-        }
-        if(numberOfTakenCards > 0)
-        {
-            takeCards();
-            //endTurn();
-        }
-    }
     public void switchDirection()
     {
         if(direction == Direction.CLOCKWISE)
@@ -166,33 +164,47 @@ public class EngineGame
         else
             direction = Direction.CLOCKWISE;
     }
+    public boolean isCardMatch(ACard card)
+    {
+        if(card instanceof ISpecialCard)
+        {
+            if(card.getColor() == ACard.Color.BLACK)
+            {
+                return true;
+            }
+            else if(card.getClass() == table.peek().getClass())
+            {
+                return true;
+            }
+            else if(card.getColor() == topColor)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            if (card.getClass() == table.peek().getClass())
+            {
+                if (((RegularCard) card).getColor() == topColor
+                        || ((RegularCard) card).getDigit() == ((RegularCard) table.peek()).getDigit())
+                {
+                    return true;
+                }
+            }else if(card.getColor() == topColor)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     public void cardOnTable(int id)
     {
         ACard card = actualPlayer().getHand().elementAt(id);
         ACard topCard = table.peek();
-        if(card.getColor() == ACard.Color.BLACK)
+        if(isCardMatch(card))
         {
             table.add(card);
             actualPlayer().getHand().remove(id);
-            ((ISpecialCard) card).action(this);
-        }
-        else if(card instanceof ISpecialCard && card.getColor() == topColor)
-        {
-            table.add(card);
-            actualPlayer().getHand().remove(id);
-            ((ISpecialCard) card).action(this);
-        }
-        else if(topCard instanceof ISpecialCard && card.getColor() == topColor)
-        {
-            table.add(card);
-            actualPlayer().getHand().remove(id);
-        }
-        else if(((RegularCard)card).getDigit() == ((RegularCard)topCard).getDigit() ||
-                 card.getColor() == topColor)
-        {
-            table.add(card);
-            actualPlayer().getHand().remove(id);
-            setTopColor(table.peek().getColor());
         }
         else
         {
@@ -200,55 +212,12 @@ public class EngineGame
             alert.setTitle("OOPS");
             alert.setContentText("You picked the wrong card fool!");
             alert.showAndWait();
+            return;
         }
-        /*
-        if(card instanceof ChColorCard || card instanceof TakeFourCard ||
-                (card instanceof ISpecialCard && card.getColor() == topColor))
-        {
-            table.add(card);
-            actualPlayer().getHand().remove(id);
+        if(card instanceof ISpecialCard)
             ((ISpecialCard) card).action(this);
-        }
-        else if(topCard instanceof ISpecialCard && card instanceof RegularCard)
-        {
-            if(card.getColor() == topColor)
-            {
-                table.add(card);
-                actualPlayer().getHand().remove(id);
-                topColor = getTopCard().getColor();
-            }
-            else
-            {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("OOPS");
-                alert.setContentText("You picked the wrong card fool");
-                alert.showAndWait();
-            }
-        }
-        else if(card instanceof RegularCard && topCard instanceof RegularCard)
-        {
-            if(((RegularCard) card).getDigit() == ((RegularCard) topCard).getDigit() ||
-            card.getColor() == topColor)
-            {
-                table.add(card);
-                actualPlayer().getHand().remove(id);
-                topColor = getTopCard().getColor();
-            }
-            else
-            {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("OOPS");
-                alert.setContentText("You picked the wrong card fool");
-                alert.showAndWait();
-            }
-        }
-        else
-        {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("OOPS");
-            alert.setContentText("You picked the wrong card fool");
-            alert.showAndWait();
-        }*/
+        if(card.getColor() != ACard.Color.BLACK)
+            setTopColor(table.peek().getColor());
     }
     /*
     * Metoda pobiera jedna karte dla gracza i pyta gracza czy chce rzucic na stol czy zachowac
@@ -260,33 +229,24 @@ public class EngineGame
         if(deck.isEmpty())
             clearTable();
         firstCard = deck.remove(0);
-        if(firstCard instanceof RegularCard && getTopCard() instanceof RegularCard)
+        if(isCardMatch(firstCard))
         {
-            if(firstCard.getColor() == topColor
-                    || ((RegularCard)firstCard).getDigit() == ((RegularCard) table.peek()).getDigit())
+            if(controllerGame.matchCardDialog(firstCard))
             {
-                if(controllerGame.takeOrFake(firstCard))
-                    table.add(firstCard);
-                else
-                    actualPlayer().getHand().add(firstCard);
+                table.add(firstCard);
+                if(firstCard instanceof ISpecialCard)
+                    ((ISpecialCard) firstCard).action(this);
+                if(firstCard.getColor() != ACard.Color.BLACK)
+                    setTopColor(table.peek().getColor());
             }
             else
-                actualPlayer().getHand().add(firstCard);
-        }
-        else if(firstCard instanceof RegularCard && getTopCard() instanceof ISpecialCard)
-        {
-            if(firstCard.getColor() == topColor)
             {
-                if(controllerGame.takeOrFake(firstCard))
-                    table.add(firstCard);
-                else
-                    actualPlayer().getHand().add(firstCard);
-            }
-            else
                 actualPlayer().getHand().add(firstCard);
+            }
         }
         else
         {
+            controllerGame.takeCardDialog(firstCard);
             actualPlayer().getHand().add(firstCard);
         }
     }
@@ -302,7 +262,7 @@ public class EngineGame
             if(index >= 0)
             {
                 ACard card = actualPlayer().getHand().remove(index);
-                if(controllerGame.takeOrFake(card))
+                if(controllerGame.matchCardDialog(card))
                 {
                     table.add(card);
                     return;
@@ -315,7 +275,7 @@ public class EngineGame
             if(index >= 0)
             {
                ACard card = actualPlayer().getHand().remove(index);
-               if(controllerGame.takeOrFake(card))
+               if(controllerGame.matchCardDialog(card))
                {
                     table.add(card);
                     return;
@@ -351,6 +311,21 @@ public class EngineGame
     * Metoda przesowa wskaznik aktualnego gracza na nastepna pozycje uwzgledniajac kierunek rozgrywki
     * Zwraca true gdy jeden z graczy wygra
     * */
+    public boolean beginTurn()
+    {/*
+        if(actualPlayer().isFrozen())
+        {
+            actualPlayer().unfreeze();
+            return false;
+        }
+        if(numberOfTakenCards > 0)
+        {
+            takeCards();
+            return false;
+        }
+        return true;*/
+        return true;
+    }
     public boolean endTurn()
     {
         if(actualPlayer().getHand().size() == 0)
@@ -358,20 +333,23 @@ public class EngineGame
             endGame();
             return true;
         }
-        if(direction == Direction.CLOCKWISE)
-        {
-            if(iActualPlayer == iLastPlayer)
-                iActualPlayer = 0;
+        do{
+            actualPlayer().unfreeze();
+            if(direction == Direction.CLOCKWISE)
+            {
+                if(iActualPlayer == iLastPlayer)
+                    iActualPlayer = 0;
+                else
+                    iActualPlayer++;
+            }
             else
-                iActualPlayer++;
-        }
-        else
-        {
-            if(iActualPlayer == 0)
-                iActualPlayer = iLastPlayer;
-            else
-                iActualPlayer--;
-        }
+            {
+                if(iActualPlayer == 0)
+                    iActualPlayer = iLastPlayer;
+                else
+                    iActualPlayer--;
+            }
+        }while(actualPlayer().isFrozen());
         return false;
     }
     public void endGame()
