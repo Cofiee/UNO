@@ -287,9 +287,11 @@ public class ControllerGame
         player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
         player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
         player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer() + 1) + " turn.");
         alert.showAndWait();
+
         if(!engineGame.beginTurn())
             nextTurn();
         updatePlayerHand();
