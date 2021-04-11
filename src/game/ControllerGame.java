@@ -5,6 +5,7 @@
 package game;
 
 import MainMenu.Main;
+import game.myAssets.AIPlayer;
 import game.myAssets.EngineGame;
 import game.myAssets.cards.ACard;
 
@@ -296,9 +297,40 @@ public class ControllerGame
             nextTurn();
         updatePlayerHand();
     }
-    @FXML
-    private void switchToMainMenu() throws IOException
+    public void nextTurn2()
     {
-        Main.setRoot("../MainMenu/sample.fxml");
+        player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
+        player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
+        player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
+        player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+        if(engineGame.actualPlayer() instanceof AIPlayer)
+        {
+
+        }
+        else
+        {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer() + 1) + " turn.");
+            alert.showAndWait();
+            updatePlayerHand();
+            return;
+        }
+    }
+    @FXML
+    private void switchToMainMenu()
+    {
+        try
+        {
+            Main.setRoot("../MainMenu/sample.fxml");
+        }catch(IOException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("IOException");
+            alert.setHeaderText("Could not find specified path: ../MainMenu/sample.fxml");
+            alert.setContentText("Check if path is proper");
+            alert.showAndWait();
+            System.exit(1);
+        }
+
     }
 }

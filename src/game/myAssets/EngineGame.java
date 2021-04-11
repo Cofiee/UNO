@@ -352,6 +352,34 @@ public class EngineGame
         }while(actualPlayer().isFrozen());
         return false;
     }
+    public boolean nextTurn()
+    {
+        if(actualPlayer().getHand().size() == 0)
+        {
+            endGame();
+            return true;
+        }
+        do{
+            actualPlayer().unfreeze();
+            if(direction == Direction.CLOCKWISE)
+            {
+                if(iActualPlayer == iLastPlayer)
+                    iActualPlayer = 0;
+                else
+                    iActualPlayer++;
+            }
+            else
+            {
+                if(iActualPlayer == 0)
+                    iActualPlayer = iLastPlayer;
+                else
+                    iActualPlayer--;
+            }
+        }while(actualPlayer().isFrozen());
+        if(numberOfTakenCards > 0)
+            takeCards();
+        return false;
+    }
     public void endGame()
     {
 

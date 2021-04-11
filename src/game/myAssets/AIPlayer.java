@@ -32,11 +32,13 @@ public class AIPlayer extends Player
     int PlayedGreenCards = 0;
     int playedYellowCards = 0;
     int playedBlackCards = 0;
-
     int TakeTwoCardUsed = 0;
     int TakeFourCardUsed = 0;
 
-    Vector<ACard>matchingCards = new Vector<ACard>();
+    int nextPlayerHandSize = 0;
+    ACard winningCard = null;
+
+    Vector<ACard>matchingCards = new Vector<>();
 
     Stack<ACard> table;
 
@@ -122,9 +124,55 @@ public class AIPlayer extends Player
                     matchingCards.add(card);
                 }
             }
-
         }
-        return;
     }
 
+    public void calculate()
+    {
+        matchMyCards();
+        int bestIndex = 0;
+        double lastOptimal = 0;
+        int i = 0;
+        for(ACard card : matchingCards)
+        {
+            double aggro = 0.0;
+            if(card instanceof ISpecialCard)
+            {
+                aggro = nextPlayerHandSize < 10 ? 10.0 - nextPlayerHandSize / 10.0 : 0;
+            }
+            else if((winningCard != null) && card.getColor() == winningCard.getColor())
+            {
+                aggro = 1.0;
+            }
+            int colorQuantity = 0;
+            switch (card.getColor())
+            {
+                case RED:
+                    colorQuantity = myRedCards;
+                    break;
+                case BLUE:
+                    colorQuantity = myBlueCards;
+                    break;
+                case GREEN:
+                    colorQuantity = myGreenCards;
+                    break;
+                case YELLOW:
+                    colorQuantity = myYellowCards;
+                    break;
+            }
+            double activation = /*card.getPoints() +*/ colorQuantity + aggro;
+            if(activation > lastOptimal)
+            {
+                lastOptimal = activation;
+                bestIndex = i;
+            }
+            ++i;
+        }
+        /*Wybor  karty*/
+    }
+
+    public double deflectionProbability()
+    {
+        return 0.0;
+    }
 }
