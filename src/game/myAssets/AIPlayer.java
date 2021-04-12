@@ -36,10 +36,11 @@ public class AIPlayer extends Player
     int TakeFourCardUsed = 0;
 
     int nextPlayerHandSize = 0;
-    ACard winningCard = null;
+    ACard opponentFailedCard = null;
+
+
 
     Vector<ACard>matchingCards = new Vector<>();
-
     Stack<ACard> table;
 
     public AIPlayer(Stack<ACard> table)
@@ -75,6 +76,11 @@ public class AIPlayer extends Player
             else
                 myRegularCards++;
         }
+    }
+
+    public void profileOpponent(Player nextPlayer)
+    {
+       opponentFailedCard = nextPlayer.failedCard;
     }
 
     private Pair<ACard.Color, Integer>[] pack()
@@ -140,7 +146,8 @@ public class AIPlayer extends Player
             {
                 aggro = nextPlayerHandSize < 10 ? 10.0 - nextPlayerHandSize / 10.0 : 0;
             }
-            else if((winningCard != null) && card.getColor() == winningCard.getColor())
+            else if((opponentFailedCard != null) &&
+                    card.getColor() == opponentFailedCard.getColor())
             {
                 aggro = 1.0;
             }

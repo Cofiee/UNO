@@ -17,6 +17,6 @@ public class StopCard extends ACard
     @Override
     public void action(EngineGame engineGame)
     {
-        engineGame.nextPLayer().freeze();
+        engineGame.getNextPLayer().freeze();
     }
 }

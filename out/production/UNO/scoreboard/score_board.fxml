@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scoreboard.ControllerScoreBoard">
+   <children>
+      <ListView fx:id="lv_scoreboard" layoutX="66.0" layoutY="13.0" prefHeight="325.0" prefWidth="468.0" />
+      <Button layoutX="482.0" layoutY="351.0" mnemonicParsing="false" onAction="#switchToMainMenu" text="Back" />
+   </children>
+</AnchorPane>

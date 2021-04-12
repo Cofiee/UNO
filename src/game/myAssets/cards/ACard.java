@@ -11,8 +11,13 @@ public abstract class ACard
         BLACK
     }
     Color color;
+    int points;
     public Color getColor()
     {
         return color;
+    }
+    public void setColor(ACard.Color color)
+    {
+        this.color = color;
     }
 }

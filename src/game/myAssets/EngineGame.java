@@ -136,7 +136,7 @@ public class EngineGame
             deck.add(new TakeFourCard());
         }
     }
-    public Player nextPLayer()
+    public Player getNextPLayer()
     {
         switch (direction)
         {
@@ -312,7 +312,8 @@ public class EngineGame
     * Zwraca true gdy jeden z graczy wygra
     * */
     public boolean beginTurn()
-    {/*
+    {
+        /*
         if(actualPlayer().isFrozen())
         {
             actualPlayer().unfreeze();
@@ -376,6 +377,10 @@ public class EngineGame
                     iActualPlayer--;
             }
         }while(actualPlayer().isFrozen());
+        if(actualPlayer() instanceof AIPlayer)
+        {
+            ((AIPlayer) actualPlayer()).profileOpponent(getNextPLayer());
+        }
         if(numberOfTakenCards > 0)
             takeCards();
         return false;
