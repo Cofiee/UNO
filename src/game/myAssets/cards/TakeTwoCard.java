@@ -12,6 +12,7 @@ public class TakeTwoCard extends ACard
             //WYJATEK
         }
         this.color = color;
+        this.points = 20;
     }
 
     @Override

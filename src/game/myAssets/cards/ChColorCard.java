@@ -8,12 +8,12 @@ public class ChColorCard extends ACard
     public ChColorCard()
     {
         this.color = Color.BLACK;
+        this.points = 50;
     }
 
     @Override
     public void action(EngineGame engineGame)
     {
-        ACard.Color pickedColor = engineGame.getControllerGame().chColorAlert();
-        engineGame.setTopColor(pickedColor);
+        this.color = engineGame.getControllerGame().chColorAlert();
     }
 }

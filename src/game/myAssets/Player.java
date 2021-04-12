@@ -36,17 +36,6 @@ public class Player
     {
         Frozen = true;
     }
-    /*
-    public ACard.Color getLastFailedColor()
-    {
-        return lastFailedColor;
-    }
-    public void setLastFailedColor(ACard.Color lastFailedColor)
-    {
-        this.lastFailedColor = lastFailedColor;
-    }
-
-     */
     public int isTakeTwoCardPossessed()
     {
         int i = 0;

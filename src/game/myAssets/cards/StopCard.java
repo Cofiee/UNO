@@ -12,6 +12,7 @@ public class StopCard extends ACard
             //Wyjatek
         }
         this.color = color;
+        this.points = 20;
     }
 
     @Override

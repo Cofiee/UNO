@@ -38,8 +38,6 @@ public class AIPlayer extends Player
     int nextPlayerHandSize = 0;
     ACard opponentFailedCard = null;
 
-
-
     Vector<ACard>matchingCards = new Vector<>();
     Stack<ACard> table;
 

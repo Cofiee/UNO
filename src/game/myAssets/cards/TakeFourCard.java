@@ -8,12 +8,12 @@ public class TakeFourCard extends ACard
     public TakeFourCard()
     {
         this.color = ACard.Color.BLACK;
+        this.points = 50;
     }
     @Override
     public void action(EngineGame engineGame)
     {
-        ACard.Color pickedColor = engineGame.getControllerGame().chColorAlert();
-        engineGame.setTopColor(pickedColor);
+        this.color = engineGame.getControllerGame().chColorAlert();
         int number = engineGame.getNumberOfTakenCards();
         engineGame.setNumberOfTakenCards(number + 4);
     }

@@ -14,7 +14,7 @@ import java.util.Vector;
 
 public class EngineGame
 {
-    private ControllerGame controllerGame;
+    private final ControllerGame controllerGame;
     Player[] players;
     enum Direction
     {
@@ -26,7 +26,6 @@ public class EngineGame
     int iActualPlayer = 0;
     Stack<ACard> table = new Stack<>();
     Vector<ACard> deck = new Vector<>();
-    RegularCard.Color topColor;
     int numberOfTakenCards = 0;
 
     public EngineGame(ControllerGame controller)
@@ -59,14 +58,6 @@ public class EngineGame
     {
         return direction;
     }
-    public ACard.Color getTopColor()
-    {
-        return topColor;
-    }
-    public void setTopColor(RegularCard.Color color)
-    {
-        this.topColor = color;
-    }
     public ControllerGame getControllerGame(){return controllerGame;}
     public int getNumberOfTakenCards()
     {
@@ -86,6 +77,19 @@ public class EngineGame
     public ACard getTopCard()
     {
         return table.peek();
+    }
+    public Player getNextPLayer()
+    {
+        switch (direction)
+        {
+            case CLOCKWISE:
+                if(iActualPlayer == iLastPlayer) return players[0];
+                else return players[iActualPlayer + 1];
+            case COUNTERCLOCKWISE:
+                if(iActualPlayer == 0) return players[iLastPlayer];
+                else return players[iActualPlayer - 1];
+        }
+        return null;
     }
     public void  prepareGame()
     {
@@ -108,10 +112,9 @@ public class EngineGame
             deck.add(table.pop());
             table.push(deck.remove(0));
         }
-        this.topColor = table.peek().getColor();
         try{controllerGame.updateTopCard();}
         catch (Exception e){}
-        controllerGame.updateColorIcon(topColor);
+        controllerGame.updateColorIcon(table.peek().getColor());
     }
     public void prepareDeck()
     {
@@ -119,7 +122,8 @@ public class EngineGame
         for(ACard.Color color : ACard.Color.values())
         {
             if(color == ACard.Color.BLACK) break;
-            for (int i = 0; i < 10; ++i)
+            deck.add(new RegularCard(0, color));
+            for (int i = 1; i < 10; ++i)
             {
                 deck.add(new RegularCard(i, color));
             }
@@ -136,23 +140,16 @@ public class EngineGame
             deck.add(new TakeFourCard());
         }
     }
-    public Player getNextPLayer()
-    {
-        switch (direction)
-        {
-            case CLOCKWISE:
-                if(iActualPlayer == iLastPlayer) return players[0];
-                else return players[iActualPlayer + 1];
-            case COUNTERCLOCKWISE:
-                if(iActualPlayer == 0) return players[iLastPlayer];
-                else return players[iActualPlayer - 1];
-        }
-        return null;
-    }
     public void clearTable()
     {
         ACard topCard = table.pop();
         deck.addAll(table);
+        for (ACard card:
+             deck)
+        {
+            if(card instanceof TakeFourCard || card instanceof ChColorCard)
+                card.setColor(ACard.Color.BLACK);
+        }
         Collections.shuffle(deck);
         table.clear();
         table.push(topCard);
@@ -176,7 +173,7 @@ public class EngineGame
             {
                 return true;
             }
-            else if(card.getColor() == topColor)
+            else if(card.getColor() == table.peek().getColor())
             {
                 return true;
             }
@@ -185,12 +182,12 @@ public class EngineGame
         {
             if (card.getClass() == table.peek().getClass())
             {
-                if (((RegularCard) card).getColor() == topColor
+                if (card.getColor() == table.peek().getColor()
                         || ((RegularCard) card).getDigit() == ((RegularCard) table.peek()).getDigit())
                 {
                     return true;
                 }
-            }else if(card.getColor() == topColor)
+            }else if(card.getColor() == table.peek().getColor())
             {
                 return true;
             }
@@ -216,8 +213,7 @@ public class EngineGame
         }
         if(card instanceof ISpecialCard)
             ((ISpecialCard) card).action(this);
-        if(card.getColor() != ACard.Color.BLACK)
-            setTopColor(table.peek().getColor());
+        nextTurn();
     }
     /*
     * Metoda pobiera jedna karte dla gracza i pyta gracza czy chce rzucic na stol czy zachowac
@@ -236,8 +232,6 @@ public class EngineGame
                 table.add(firstCard);
                 if(firstCard instanceof ISpecialCard)
                     ((ISpecialCard) firstCard).action(this);
-                if(firstCard.getColor() != ACard.Color.BLACK)
-                    setTopColor(table.peek().getColor());
             }
             else
             {
@@ -249,6 +243,7 @@ public class EngineGame
             controllerGame.takeCardDialog(firstCard);
             actualPlayer().getHand().add(firstCard);
         }
+        nextTurn();
     }
     /*
     * Metoda pobiera karty dla gracze i sprawdza czy pierwsza karta ratuje gracza od dobierania
@@ -265,6 +260,7 @@ public class EngineGame
                 if(controllerGame.matchCardDialog(card))
                 {
                     table.add(card);
+                    nextTurn();
                     return;
                 }
             }
@@ -278,6 +274,7 @@ public class EngineGame
                if(controllerGame.matchCardDialog(card))
                {
                     table.add(card);
+                    nextTurn();
                     return;
                }
             }
@@ -292,6 +289,7 @@ public class EngineGame
         {
             table.add(firstCard);
             ((ISpecialCard) firstCard).action(this);
+            nextTurn();
             return;
         }
         else
@@ -306,59 +304,19 @@ public class EngineGame
                 actualPlayer().getHand().add(deck.remove(0));
             }
         }
+        nextTurn();
     }
     /*
     * Metoda przesowa wskaznik aktualnego gracza na nastepna pozycje uwzgledniajac kierunek rozgrywki
     * Zwraca true gdy jeden z graczy wygra
     * */
-    public boolean beginTurn()
-    {
-        /*
-        if(actualPlayer().isFrozen())
-        {
-            actualPlayer().unfreeze();
-            return false;
-        }
-        if(numberOfTakenCards > 0)
-        {
-            takeCards();
-            return false;
-        }
-        return true;*/
-        return true;
-    }
-    public boolean endTurn()
+    public void nextTurn()
     {
         if(actualPlayer().getHand().size() == 0)
         {
             endGame();
-            return true;
-        }
-        do{
-            actualPlayer().unfreeze();
-            if(direction == Direction.CLOCKWISE)
-            {
-                if(iActualPlayer == iLastPlayer)
-                    iActualPlayer = 0;
-                else
-                    iActualPlayer++;
-            }
-            else
-            {
-                if(iActualPlayer == 0)
-                    iActualPlayer = iLastPlayer;
-                else
-                    iActualPlayer--;
-            }
-        }while(actualPlayer().isFrozen());
-        return false;
-    }
-    public boolean nextTurn()
-    {
-        if(actualPlayer().getHand().size() == 0)
-        {
-            endGame();
-            return true;
+            controllerGame.nextTurn2(true);
+            return;
         }
         do{
             actualPlayer().unfreeze();
@@ -381,9 +339,9 @@ public class EngineGame
         {
             ((AIPlayer) actualPlayer()).profileOpponent(getNextPLayer());
         }
+        controllerGame.nextTurn2(false);
         if(numberOfTakenCards > 0)
             takeCards();
-        return false;
     }
     public void endGame()
     {

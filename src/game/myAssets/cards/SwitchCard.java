@@ -13,6 +13,7 @@ public class SwitchCard extends ACard
             //WYJATEK
         }
         this.color = color;
+        this.points = 20;
     }
 
     @Override

@@ -29,7 +29,7 @@ import java.util.*;
 
 public class ControllerGame
 {
-    EngineGame engineGame;
+    final EngineGame engineGame;
 
     @FXML
     Circle top_color;
@@ -171,7 +171,7 @@ public class ControllerGame
                         engineGame.cardOnTable(Integer.parseInt(imageView.getId()));
                         updateTopCard();
                         updatePlayerHand();
-                        updateColorIcon(engineGame.getTopColor());
+                        updateColorIcon(engineGame.getTopCard().getColor());
                         updateTopCard();
                     }
                 });
@@ -218,9 +218,6 @@ public class ControllerGame
     public void takeOneCard()
     {
         engineGame.takeOne();
-        updateTopCard();
-        updateColorIcon(engineGame.getTopColor());
-        this.nextTurn();
     }
     /*
     *
@@ -271,49 +268,33 @@ public class ControllerGame
             alert.setContentText(e.getMessage());
         }
     }
-    public void nextTurn()
+    public void nextTurn2(boolean isGameEnded)
     {
-        if(engineGame.endTurn())
+        updateTopCard();
+        updateColorIcon(engineGame.getTopCard().getColor());
+        if(isGameEnded)
         {
-            try
-            {
-                switchToMainMenu();
-            }catch (Exception e)
-            {
-
-            }
+            switchToMainMenu();
             return;
         }
         player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
         player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
         player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
         player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer() + 1) + " turn.");
-        alert.showAndWait();
-
-        if(!engineGame.beginTurn())
-            nextTurn();
-        updatePlayerHand();
-    }
-    public void nextTurn2()
-    {
-        player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
-        player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
-        player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
-        player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+        button_take_card.setDisable(true);
         if(engineGame.actualPlayer() instanceof AIPlayer)
         {
-
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("It is now Computer " + (engineGame.getIActualPlayer()) + " turn.");
+            alert.show();
         }
         else
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer() + 1) + " turn.");
+            alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer()) + " turn.");
             alert.showAndWait();
+            button_take_card.setDisable(false);
             updatePlayerHand();
-            return;
         }
     }
     @FXML

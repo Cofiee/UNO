@@ -20,4 +20,12 @@ public abstract class ACard
     {
         this.color = color;
     }
+    public int getPoints()
+    {
+        return points;
+    }
+    public void setPoints(int points)
+    {
+        this.points = points;
+    }
 }

@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 
-<AnchorPane prefHeight="799.0" prefWidth="1000.0" style="-fx-background-color: #696969;" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="game.ControllerGame">
+<AnchorPane prefHeight="799.0" prefWidth="1000.0" style="-fx-background-color: #696969;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="game.ControllerGame">
    <children>
       <AnchorPane fx:id="card_stack" layoutX="405.0" layoutY="200.0" prefHeight="300.0" prefWidth="190.0" style="-fx-background-color: #dcdcdc;" />
       <HBox fx:id="player_position_0_hbox" layoutX="14.0" layoutY="543.0" prefHeight="300.0" prefWidth="190.0" style="-fx-background-color: #000000;" />
@@ -13,6 +13,5 @@
       <HBox fx:id="player_position_2_hbox" layoutX="400.0" layoutY="32.0" prefHeight="130.0" prefWidth="200.0" style="-fx-background-color: pink;" />
       <VBox fx:id="player_position_1_vbox" layoutX="823.0" layoutY="300.0" prefHeight="200.0" prefWidth="130.0" style="-fx-background-color: pink;" />
       <VBox fx:id="player_position_3_vbox" layoutX="47.0" layoutY="300.0" prefHeight="200.0" prefWidth="130.0" style="-fx-background-color: pink;" />
-      <Button layoutX="112.0" layoutY="162.0" mnemonicParsing="false" onAction="#nextTurn" text="Test" />
    </children>
 </AnchorPane>
