@@ -14,6 +14,7 @@ import java.util.Vector;
 
 public class EngineGame
 {
+    public int MAX_PLAYERS_NUMBER = 4;
     private final ControllerGame controllerGame;
     Player[] players;
     enum Direction
@@ -34,13 +35,14 @@ public class EngineGame
     }
     public void initializePlayers(int numberOfPlayers, int numberOfAi)
     {
-        if(numberOfPlayers > 4) return;//throw new Exception();
-        if(numberOfAi > 4 - numberOfPlayers) return;
+        if(numberOfPlayers > MAX_PLAYERS_NUMBER) return;//throw new Exception();
+        if(numberOfAi > MAX_PLAYERS_NUMBER - numberOfPlayers) return;
         players = new Player[numberOfPlayers + numberOfAi];
         this.iLastPlayer = players.length - 1;
         for(int i = 0; i < numberOfPlayers; ++i)
             players[i] = new Player();
-        //AI
+        for(int i = numberOfPlayers; i < numberOfPlayers + numberOfAi; ++i)
+            players[i] = new AIPlayer(table);
     }
     public Player[] getPlayers()
     {
@@ -95,7 +97,7 @@ public class EngineGame
     {
         if(players == null)
         {
-            initializePlayers(controllerGame.numberOfPlayersDialog(), 0);
+          initializePlayers(1, 1);
         }
         table.clear();
         prepareDeck();
@@ -245,6 +247,24 @@ public class EngineGame
         }
         nextTurn();
     }
+    private void takeOneAi()
+    {
+        ACard firstCard;
+        if(deck.isEmpty())
+            clearTable();
+        firstCard = deck.remove(0);
+        if(isCardMatch(firstCard))
+        {
+            table.add(firstCard);
+            if(firstCard instanceof ISpecialCard)
+                ((ISpecialCard) firstCard).action(this);
+        }
+        else
+        {
+            controllerGame.takeCardDialog(firstCard);
+            actualPlayer().getHand().add(firstCard);
+        }
+    }
     /*
     * Metoda pobiera karty dla gracze i sprawdza czy pierwsza karta ratuje gracza od dobierania
     * */
@@ -257,7 +277,13 @@ public class EngineGame
             if(index >= 0)
             {
                 ACard card = actualPlayer().getHand().remove(index);
-                if(controllerGame.matchCardDialog(card))
+                if(actualPlayer() instanceof AIPlayer)
+                {
+                    table.add(card);
+                    nextTurn();
+                    return;
+                }
+                else if(controllerGame.matchCardDialog(card))
                 {
                     table.add(card);
                     nextTurn();
@@ -315,7 +341,7 @@ public class EngineGame
         if(actualPlayer().getHand().size() == 0)
         {
             endGame();
-            controllerGame.nextTurn2(true);
+            controllerGame.nextTurn(true);
             return;
         }
         do{
@@ -335,13 +361,15 @@ public class EngineGame
                     iActualPlayer--;
             }
         }while(actualPlayer().isFrozen());
-        if(actualPlayer() instanceof AIPlayer)
-        {
-            ((AIPlayer) actualPlayer()).profileOpponent(getNextPLayer());
-        }
-        controllerGame.nextTurn2(false);
+        controllerGame.nextTurn(false);
         if(numberOfTakenCards > 0)
             takeCards();
+        if(actualPlayer() instanceof AIPlayer)
+        {
+            ((AIPlayer)actualPlayer()).profileOpponent(getNextPLayer());
+            playAi();
+            nextTurn();
+        }
     }
     public void endGame()
     {
@@ -382,5 +410,12 @@ public class EngineGame
            fileName += "large";
         }
         return fileName += ".png";
+    }
+    public void playAi()
+    {
+        if(((AIPlayer)actualPlayer()).matchMyCards())
+            table.add(((AIPlayer)actualPlayer()).playCard());
+        else
+            takeOneAi();
     }
 }

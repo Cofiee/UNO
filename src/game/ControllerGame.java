@@ -53,7 +53,9 @@ public class ControllerGame
     @FXML
     void initialize()
     {
-        engineGame.initializePlayers(numberOfPlayersDialog(), 0);
+        int playersNumber = numberOfPlayersDialog(engineGame.MAX_PLAYERS_NUMBER);
+        int AiNumber = numberOfAiPlayersDialog(engineGame.MAX_PLAYERS_NUMBER, playersNumber);
+        engineGame.initializePlayers(playersNumber, AiNumber);
         engineGame.prepareGame();
         updatePlayerHand();
     }
@@ -61,13 +63,26 @@ public class ControllerGame
     * Wyswietla dialog z zapytaniem o liczbe graczy
     * Zwraca wybrana liczbe graczy
     * */
-    public int numberOfPlayersDialog()
+    public int numberOfPlayersDialog(int maxPlayerNumber)
     {
         List<Integer> choices = new ArrayList<>();
-        choices.add(2);
-        choices.add(3);
-        choices.add(4);
+        for(int i = 1; i <= maxPlayerNumber; ++i)
+        {
+            choices.add(i);
+        }
         ChoiceDialog<Integer> dialog = new ChoiceDialog<>(2, choices);
+        Optional<Integer> result = dialog.showAndWait();
+        return result.get();
+    }
+    public int numberOfAiPlayersDialog(int maxPlayerNumber,int humansNumber)
+    {
+        List<Integer> choices = new ArrayList<>();
+        int maxAi = 4 - humansNumber;
+        for (int i = 0; i <= maxAi; ++i)
+        {
+            choices.add(i);
+        }
+        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(0, choices);
         Optional<Integer> result = dialog.showAndWait();
         return result.get();
     }
@@ -268,7 +283,7 @@ public class ControllerGame
             alert.setContentText(e.getMessage());
         }
     }
-    public void nextTurn2(boolean isGameEnded)
+    public void nextTurn(boolean isGameEnded)
     {
         updateTopCard();
         updateColorIcon(engineGame.getTopCard().getColor());

@@ -29,7 +29,7 @@ public class AIPlayer extends Player
 
     int playedRedCards = 0;
     int playedBlueCards = 0;
-    int PlayedGreenCards = 0;
+    int playedGreenCards = 0;
     int playedYellowCards = 0;
     int playedBlackCards = 0;
     int TakeTwoCardUsed = 0;
@@ -48,6 +48,11 @@ public class AIPlayer extends Player
 
     public void scanHand()
     {
+        myRedCards = 0;
+        myBlueCards = 0;
+        myGreenCards = 0;
+        myYellowCards = 0;
+        myBlackCards = 0;
         for (ACard card:
              super.hand)
         {
@@ -92,7 +97,7 @@ public class AIPlayer extends Player
         };
     }
 
-    public ACard.Color maxColorQuantity()
+    private ACard.Color maxColorQuantity()
     {
         Pair<ACard.Color, Integer>[] pairs = pack();
         Pair<ACard.Color, Integer> maxPair = pairs[0];
@@ -104,7 +109,7 @@ public class AIPlayer extends Player
         return maxPair.getKey();
     }
 
-    public void matchMyCards()
+    public boolean matchMyCards()
     {
         matchingCards.clear();
         ACard topCard = table.peek();
@@ -129,11 +134,14 @@ public class AIPlayer extends Player
                 }
             }
         }
+        return !matchingCards.isEmpty();
     }
 
-    public void calculate()
+    public ACard playCard()
     {
-        matchMyCards();
+        if(matchingCards.isEmpty())
+            return null;
+        scanHand();
         int bestIndex = 0;
         double lastOptimal = 0;
         int i = 0;
@@ -165,7 +173,7 @@ public class AIPlayer extends Player
                     colorQuantity = myYellowCards;
                     break;
             }
-            double activation = /*card.getPoints() +*/ colorQuantity + aggro;
+            double activation = card.getPoints() + colorQuantity + aggro;
             if(activation > lastOptimal)
             {
                 lastOptimal = activation;
@@ -173,11 +181,32 @@ public class AIPlayer extends Player
             }
             ++i;
         }
-        /*Wybor  karty*/
+        ACard pickedCard = matchingCards.remove(bestIndex);
+        hand.remove(pickedCard);
+        return pickedCard;
     }
 
-    public double deflectionProbability()
+    private double deflectionProbability(long n, long k)
     {
+        double probability;
+        if (n < k) return 0;
+        if (n == k) return 1;
+        long delta, iMax;
+        if (k < n-k)
+        {
+            delta = n-k;
+            iMax = k;
+        }else
+        {
+            delta = k;
+            iMax = n-k;
+        }
+        long ans = delta + 1;
+        for (long i = 2; i <= iMax; ++i)
+        {
+            ans = (ans * (delta + i)) / i;
+        }
+        probability = (TAKE_TWO_CARDS_IN_GAME - TakeTwoCardUsed) / ans;
         return 0.0;
     }
 }

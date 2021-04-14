@@ -17,7 +17,7 @@
         </rowConstraints>
          <children>
             <Button fx:id="button_exit" mnemonicParsing="false" onAction="#test" prefHeight="25.0" prefWidth="121.0" text="Exit" GridPane.rowIndex="3" />
-            <Button fx:id="button_singleplayer" mnemonicParsing="false" onAction="#switchToSecondary" prefHeight="25.0" prefWidth="106.0" text="Single Player" GridPane.rowIndex="0" />
+            <Button fx:id="button_singleplayer" mnemonicParsing="false" onAction="#switchToMultiplayer" prefHeight="25.0" prefWidth="106.0" text="Single Player" GridPane.rowIndex="0" />
             <Button fx:id="button_multiplayer" mnemonicParsing="false" prefHeight="25.0" prefWidth="114.0" text="Multiplayer" GridPane.rowIndex="1" />
             <Button fx:id="button_scoreboard" mnemonicParsing="false" onAction="#switchToScoreboard" prefHeight="25.0" prefWidth="113.0" text="Scoreboard" GridPane.rowIndex="2" />
          </children>

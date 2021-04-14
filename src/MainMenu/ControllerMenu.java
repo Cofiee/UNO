@@ -11,7 +11,7 @@ import java.util.LinkedList;
 public class ControllerMenu
 {
     @FXML
-    private void switchToSecondary() throws IOException
+    private void switchToMultiplayer() throws IOException
     {
         Main.setRoot("../game/game_board_v2.fxml");
     }
