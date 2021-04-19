@@ -11,10 +11,7 @@ import game.myAssets.cards.ACard;
 
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -45,6 +42,8 @@ public class ControllerGame
     VBox player_position_3_vbox;
     @FXML
     Button button_take_card;
+    @FXML
+    VBox score_board;
 
     public ControllerGame()
     {
@@ -78,11 +77,12 @@ public class ControllerGame
     {
         List<Integer> choices = new ArrayList<>();
         int maxAi = 4 - humansNumber;
-        for (int i = 0; i <= maxAi; ++i)
+        int minAi = humansNumber == 1 ? 1 : 0;
+        for (int i = minAi; i <= maxAi; ++i)
         {
             choices.add(i);
         }
-        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(0, choices);
+        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(minAi, choices);
         Optional<Integer> result = dialog.showAndWait();
         return result.get();
     }
@@ -283,20 +283,24 @@ public class ControllerGame
             alert.setContentText(e.getMessage());
         }
     }
-    public void nextTurn(boolean isGameEnded)
+    public void disableAll()
     {
-        updateTopCard();
-        updateColorIcon(engineGame.getTopCard().getColor());
-        if(isGameEnded)
-        {
-            switchToMainMenu();
-            return;
-        }
+
         player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
         player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
         player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
         player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
         button_take_card.setDisable(true);
+    }
+    public void enableAll()
+    {
+        button_take_card.setDisable(false);
+        updatePlayerHand();
+        updateTopCard();
+        updateColorIcon(engineGame.getTopCard().getColor());
+    }
+    public void nextPlayerDialog()
+    {
         if(engineGame.actualPlayer() instanceof AIPlayer)
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -312,8 +316,18 @@ public class ControllerGame
             updatePlayerHand();
         }
     }
+    public void refreshScoreboard(int[] points)
+    {
+        score_board.getChildren().removeAll(score_board.getChildren());
+        int i = 0;
+        for (int point:
+             points)
+        {
+            score_board.getChildren().add(new Label("Player " + i + ":  " + point));
+        }
+    }
     @FXML
-    private void switchToMainMenu()
+    public void switchToMainMenu()
     {
         try
         {
@@ -327,6 +341,5 @@ public class ControllerGame
             alert.showAndWait();
             System.exit(1);
         }
-
     }
 }

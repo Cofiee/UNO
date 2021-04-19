@@ -7,6 +7,7 @@ package game.myAssets;
 import game.ControllerGame;
 import game.myAssets.cards.*;
 import javafx.scene.control.Alert;
+import scoreboard.ScoreManager;
 
 import java.util.Collections;
 import java.util.Stack;
@@ -114,9 +115,10 @@ public class EngineGame
             deck.add(table.pop());
             table.push(deck.remove(0));
         }
-        try{controllerGame.updateTopCard();}
-        catch (Exception e){}
+        controllerGame.updateTopCard();
         controllerGame.updateColorIcon(table.peek().getColor());
+        int[] points = new int[4];
+        controllerGame.refreshScoreboard(points);
     }
     public void prepareDeck()
     {
@@ -261,7 +263,6 @@ public class EngineGame
         }
         else
         {
-            controllerGame.takeCardDialog(firstCard);
             actualPlayer().getHand().add(firstCard);
         }
     }
@@ -280,12 +281,14 @@ public class EngineGame
                 if(actualPlayer() instanceof AIPlayer)
                 {
                     table.add(card);
+                    ((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
                 else if(controllerGame.matchCardDialog(card))
                 {
                     table.add(card);
+                    ((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
@@ -297,12 +300,20 @@ public class EngineGame
             if(index >= 0)
             {
                ACard card = actualPlayer().getHand().remove(index);
-               if(controllerGame.matchCardDialog(card))
-               {
+                if(actualPlayer() instanceof AIPlayer)
+                {
                     table.add(card);
+                    ((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
-               }
+                }
+                else if(controllerGame.matchCardDialog(card))
+                {
+                    table.add(card);
+                    ((ISpecialCard)card).action(this);
+                    nextTurn();
+                    return;
+                }
             }
         }
         //Czy pierwsza karta ratuje
@@ -338,42 +349,75 @@ public class EngineGame
     * */
     public void nextTurn()
     {
-        if(actualPlayer().getHand().size() == 0)
+        controllerGame.disableAll();
+        do
         {
-            endGame();
-            controllerGame.nextTurn(true);
-            return;
-        }
-        do{
-            actualPlayer().unfreeze();
-            if(direction == Direction.CLOCKWISE)
+            if(actualPlayer().getHand().isEmpty())
             {
-                if(iActualPlayer == iLastPlayer)
-                    iActualPlayer = 0;
+                endMatch(actualPlayer());
+                if(actualPlayer().getScore() > 10)
+                {
+                    endGame();
+                    controllerGame.switchToMainMenu();
+                    return;
+                }
                 else
-                    iActualPlayer++;
+                {
+                    prepareDeck();
+                    prepareGame();
+                    return;
+                }
             }
-            else
+            do
             {
-                if(iActualPlayer == 0)
-                    iActualPlayer = iLastPlayer;
+                actualPlayer().unfreeze();
+                if(direction == Direction.CLOCKWISE)
+                {
+                    if(iActualPlayer == iLastPlayer)
+                        iActualPlayer = 0;
+                    else
+                        iActualPlayer++;
+                }
                 else
-                    iActualPlayer--;
+                {
+                    if(iActualPlayer == 0)
+                        iActualPlayer = iLastPlayer;
+                    else
+                        iActualPlayer--;
+                }
+            }while (actualPlayer().isFrozen());
+            if(numberOfTakenCards > 0)
+            {
+                takeCards();
+                continue;
             }
-        }while(actualPlayer().isFrozen());
-        controllerGame.nextTurn(false);
-        if(numberOfTakenCards > 0)
-            takeCards();
-        if(actualPlayer() instanceof AIPlayer)
+            controllerGame.nextPlayerDialog();
+            if(actualPlayer() instanceof AIPlayer)
+            {
+                ((AIPlayer)actualPlayer()).profileOpponent(getNextPLayer());
+                playAi();
+            }
+        }while (actualPlayer() instanceof AIPlayer);
+        controllerGame.enableAll();
+    }
+    public void endMatch(Player winner)
+    {
+        int points = 0;
+        for (Player player : players)
         {
-            ((AIPlayer)actualPlayer()).profileOpponent(getNextPLayer());
-            playAi();
-            nextTurn();
+            if(player == winner)
+                continue;
+            for (ACard card: player.getHand())
+            {
+                points += card.getPoints();
+            }
         }
+        winner.addScore(points);
     }
     public void endGame()
     {
-
+        ScoreManager scoreManager = new ScoreManager("scoreboard.txt");
+        scoreManager.saveScore(players);
     }
     public String parseCard(ACard card)
     {
@@ -414,8 +458,20 @@ public class EngineGame
     public void playAi()
     {
         if(((AIPlayer)actualPlayer()).matchMyCards())
-            table.add(((AIPlayer)actualPlayer()).playCard());
+        {
+            ACard card = ((AIPlayer)actualPlayer()).playCard();
+            if(card instanceof ISpecialCard)
+                ((ISpecialCard) card).action(this);
+            table.add(card);
+        }
         else
             takeOneAi();
+    }
+    public ACard.Color chColorAction()
+    {
+        if(actualPlayer() instanceof AIPlayer)
+            return ((AIPlayer) actualPlayer()).maxColorQuantity();
+        else
+            return controllerGame.chColorAlert();
     }
 }

@@ -14,6 +14,6 @@ public class ChColorCard extends ACard
     @Override
     public void action(EngineGame engineGame)
     {
-        this.color = engineGame.getControllerGame().chColorAlert();
+        this.color = engineGame.chColorAction();
     }
 }

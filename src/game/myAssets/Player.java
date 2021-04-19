@@ -9,11 +9,12 @@ import java.util.Vector;
 
 public class Player
 {
-    String name;
-    Vector<ACard> hand;
-    boolean Frozen;
+    protected String name;
+    protected Vector<ACard> hand;
+    protected boolean Frozen;
     /*Karta przy ktorej nie dalo sie rzucic nic na stol*/
-    ACard failedCard = null;
+    protected ACard failedCard = null;
+    protected int score = 0;
 
     public Player(){this.hand = new Vector<>();}
     public String getName()
@@ -23,6 +24,18 @@ public class Player
     public Vector<ACard> getHand()
     {
         return hand;
+    }
+    public int getScore()
+    {
+        return score;
+    }
+    public void setScore(int score)
+    {
+        this.score = score;
+    }
+    public void addScore(int score)
+    {
+        this.score += score;
     }
     public boolean isFrozen()
     {

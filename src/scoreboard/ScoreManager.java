@@ -1,9 +1,12 @@
 package scoreboard;
 
+import game.myAssets.Player;
 import javafx.scene.control.Alert;
 
 import javax.imageio.IIOException;
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Vector;
@@ -39,8 +42,21 @@ public class ScoreManager
         this.path = path;
     }
 
-    public void saveScore(MyNode myNode)
+    public void saveScore(Player[] players)
     {
+        SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        Date date = new Date(System.currentTimeMillis());
+        ScoreManager.MyNode myNode = new ScoreManager.MyNode();
+        myNode.row1[0] = "Gra";
+        myNode.row1[1] = players[0].getClass().toString();
+        myNode.row1[2] = players[1].getClass().toString();
+        myNode.row1[3] = players[2].getClass().toString();
+        myNode.row1[4] = players[3].getClass().toString();
+        myNode.row2[0] = date.toString();
+        myNode.row2[1] = String.valueOf(players[0].getScore());
+        myNode.row2[2] = String.valueOf(players[1].getScore());
+        myNode.row2[3] = String.valueOf(players[2].getScore());
+        myNode.row2[4] = String.valueOf(players[3].getScore());
         PrintWriter printWriter = null;
         try
         {

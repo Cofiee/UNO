@@ -13,8 +13,8 @@ public class TakeFourCard extends ACard
     @Override
     public void action(EngineGame engineGame)
     {
-        this.color = engineGame.getControllerGame().chColorAlert();
-        int number = engineGame.getNumberOfTakenCards();
-        engineGame.setNumberOfTakenCards(number + 4);
+        this.color = engineGame.chColorAction();
+        int numberOfTakenCards = engineGame.getNumberOfTakenCards();
+        engineGame.setNumberOfTakenCards(numberOfTakenCards + 4);
     }
 }

@@ -92,12 +92,12 @@ public class AIPlayer extends Player
                 new Pair<>(ACard.Color.RED, myRedCards),
                 new Pair<>(ACard.Color.BLUE, myBlueCards),
                 new Pair<>(ACard.Color.GREEN, myGreenCards),
-                new Pair<>(ACard.Color.YELLOW, myYellowCards),
-                new Pair<>(ACard.Color.BLACK, myBlackCards)
+                new Pair<>(ACard.Color.YELLOW, myYellowCards)//,
+                //new Pair<>(ACard.Color.BLACK, myBlackCards)
         };
     }
 
-    private ACard.Color maxColorQuantity()
+    public ACard.Color maxColorQuantity()
     {
         Pair<ACard.Color, Integer>[] pairs = pack();
         Pair<ACard.Color, Integer> maxPair = pairs[0];
