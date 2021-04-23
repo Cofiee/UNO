@@ -1,12 +1,8 @@
-/*
-* Autor: Rafał Topolski
-* Cel: Obsługa interfejsu urzytkownika
-* */
 package game;
 
 import MainMenu.Main;
 import game.myAssets.AI.AIPlayer;
-import game.myAssets.EngineGame;
+import game.myAssets.EngineGameSp;
 import game.myAssets.cards.ACard;
 
 import javafx.event.EventHandler;
@@ -24,9 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-public class ControllerGame
+public class ControllerGameSp
 {
-    final EngineGame engineGame;
+    final EngineGameSp engineGameSp;
 
     @FXML
     Circle top_color;
@@ -45,23 +41,23 @@ public class ControllerGame
     @FXML
     VBox score_board;
 
-    public ControllerGame()
+    public ControllerGameSp()
     {
-        this.engineGame = new EngineGame(this);
+        this.engineGameSp = new EngineGameSp(this);
     }
     @FXML
     void initialize()
     {
-        int playersNumber = numberOfPlayersDialog(engineGame.MAX_PLAYERS_NUMBER);
-        int AiNumber = numberOfAiPlayersDialog(engineGame.MAX_PLAYERS_NUMBER, playersNumber);
-        engineGame.initializePlayers(playersNumber, AiNumber);
-        engineGame.prepareGame();
+        int playersNumber = numberOfPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER);
+        int AiNumber = numberOfAiPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER, playersNumber);
+        engineGameSp.initializePlayers(playersNumber, AiNumber);
+        engineGameSp.prepareGame();
         updatePlayerHand();
     }
     /*
-    * Wyswietla dialog z zapytaniem o liczbe graczy
-    * Zwraca wybrana liczbe graczy
-    * */
+     * Wyswietla dialog z zapytaniem o liczbe graczy
+     * Zwraca wybrana liczbe graczy
+     * */
     public int numberOfPlayersDialog(int maxPlayerNumber)
     {
         List<Integer> choices = new ArrayList<>();
@@ -87,8 +83,8 @@ public class ControllerGame
         return result.get();
     }
     /*
-    * Metoda wyswietlajaca powiadomienie o potrzebie zmiany koloru
-    * */
+     * Metoda wyswietlajaca powiadomienie o potrzebie zmiany koloru
+     * */
     public ACard.Color chColorAlert()
     {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -110,8 +106,8 @@ public class ControllerGame
             return ACard.Color.YELLOW;
     }
     /*
-    * Metoda aktualizujaca ikone koloru gornej karty
-    * */
+     * Metoda aktualizujaca ikone koloru gornej karty
+     * */
     public void updateColorIcon(ACard.Color myColor)
     {
         Color color;
@@ -135,11 +131,11 @@ public class ControllerGame
         top_color.setFill(color);
     }
     /*
-    * Metoda wyswietlajaca karty na szczycie stolu
-    * */
+     * Metoda wyswietlajaca karty na szczycie stolu
+     * */
     public void updateTopCard()
     {
-        String path = "src/game/myAssets/cards/sprites/"+engineGame.parseCard(engineGame.getTopCard());
+        String path = "src/game/myAssets/cards/sprites/"+engineGameSp.parseCard(engineGameSp.getTopCard());
         try
         {
             FileInputStream inputStream = new FileInputStream(path);
@@ -157,20 +153,20 @@ public class ControllerGame
         }
     }
     /*
-    * Metoda odpowiadajaca za wyswietlanie kart graczy w polach graczy
-    * Kazda karta ma zainicjalizowany event
-    * */
+     * Metoda odpowiadajaca za wyswietlanie kart graczy w polach graczy
+     * Kazda karta ma zainicjalizowany event
+     * */
     public void updatePlayerHand()
     {
         player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
-        Vector<ACard> hand = engineGame.actualPlayer().getHand();
+        Vector<ACard> hand = engineGameSp.actualPlayer().getHand();
         List<ImageView> imageViews = new LinkedList<>();
         double size = player_position_0_hbox.getWidth() / hand.size();
         int id = 0;
         for (ACard card:
-             hand)
+                hand)
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
+            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
             try
             {
                 FileInputStream inputStream = new FileInputStream(path);
@@ -183,10 +179,10 @@ public class ControllerGame
                     @Override
                     public void handle(MouseEvent event)
                     {
-                        engineGame.cardOnTable(Integer.parseInt(imageView.getId()));
+                        engineGameSp.cardOnTable(Integer.parseInt(imageView.getId()));
                         updateTopCard();
                         updatePlayerHand();
-                        updateColorIcon(engineGame.getTopCard().getColor());
+                        updateColorIcon(engineGameSp.getTopCard().getColor());
                         updateTopCard();
                     }
                 });
@@ -228,20 +224,20 @@ public class ControllerGame
         player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
     }
     /*
-    * Inicjuje dobranie jednej karty w silniku
-    * */
+     * Inicjuje dobranie jednej karty w silniku
+     * */
     public void takeOneCard()
     {
-        engineGame.takeOne();
+        engineGameSp.takeOne();
     }
     /*
-    *
-    * */
+     *
+     * */
     public boolean matchCardDialog(ACard card)
     {
         try
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
+            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
             InputStream inputStream = new FileInputStream(path);
             ImageView imageView = new ImageView(new Image(inputStream));
             final String[] options = {"Throw it", "Take it"};
@@ -267,7 +263,7 @@ public class ControllerGame
     {
         try
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
+            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
             InputStream inputStream = new FileInputStream(path);
             ImageView imageView = new ImageView(new Image(inputStream));
             final String[] options = {"Throw it", "Take it"};
@@ -297,20 +293,20 @@ public class ControllerGame
         button_take_card.setDisable(false);
         updatePlayerHand();
         updateTopCard();
-        updateColorIcon(engineGame.getTopCard().getColor());
+        updateColorIcon(engineGameSp.getTopCard().getColor());
     }
     public void nextPlayerDialog()
     {
-        if(engineGame.actualPlayer() instanceof AIPlayer)
+        if(engineGameSp.actualPlayer() instanceof AIPlayer)
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("It is now Computer " + (engineGame.getIActualPlayer()) + " turn.");
+            alert.setHeaderText("It is now Computer " + (engineGameSp.getIActualPlayer()) + " turn.");
             alert.show();
         }
         else
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer()) + " turn.");
+            alert.setHeaderText("It is now player " + (engineGameSp.getIActualPlayer()) + " turn.");
             alert.showAndWait();
             button_take_card.setDisable(false);
             updatePlayerHand();
@@ -321,7 +317,7 @@ public class ControllerGame
         score_board.getChildren().removeAll(score_board.getChildren());
         int i = 0;
         for (int point:
-             points)
+                points)
         {
             score_board.getChildren().add(new Label("Player " + i + ":  " + point));
         }

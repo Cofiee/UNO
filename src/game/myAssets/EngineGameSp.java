@@ -1,37 +1,32 @@
-/*
-* Autor: Rafał Topolski
-* Cel: obsługa logiki gry
-* */
 package game.myAssets;
 
-import game.ControllerGame;
+import game.ControllerGameSp;
 import game.myAssets.AI.AIPlayer;
 import game.myAssets.cards.*;
 import javafx.scene.control.Alert;
 import scoreboard.ScoreManager;
 
-import java.util.Collections;
-import java.util.Stack;
-import java.util.Vector;
+import java.util.*;
 
-public class EngineGame
+public class EngineGameSp
 {
     public int MAX_PLAYERS_NUMBER = 4;
-    private final ControllerGame controllerGame;
+    private final ControllerGameSp controllerGame;
     Player[] players;
     enum Direction
     {
         CLOCKWISE,
         COUNTERCLOCKWISE
     }
-    Direction direction = Direction.CLOCKWISE;
+    EngineGame.Direction direction = EngineGame.Direction.CLOCKWISE;
     int iLastPlayer;
     int iActualPlayer = 0;
     Stack<ACard> table = new Stack<>();
     Vector<ACard> deck = new Vector<>();
+    ArrayList<ACard> setOfCards = new ArrayList<>();
     int numberOfTakenCards = 0;
 
-    public EngineGame(ControllerGame controller)
+    public EngineGameSp(ControllerGameSp controller)
     {
         this.controllerGame = controller;
     }
@@ -58,11 +53,11 @@ public class EngineGame
     {
         return players[iActualPlayer];
     }
-    public Direction getDirection()
+    public EngineGame.Direction getDirection()
     {
         return direction;
     }
-    public ControllerGame getControllerGame(){return controllerGame;}
+    public ControllerGameSp getControllerGame(){return controllerGame;}
     public int getNumberOfTakenCards()
     {
         return this.numberOfTakenCards;
@@ -99,7 +94,7 @@ public class EngineGame
     {
         if(players == null)
         {
-          initializePlayers(1, 1);
+            initializePlayers(1, 1);
         }
         table.clear();
         prepareDeck();
@@ -116,6 +111,7 @@ public class EngineGame
             deck.add(table.pop());
             table.push(deck.remove(0));
         }
+        ((AIPlayer)players[1]).createMinMaxTree(this);
         controllerGame.updateTopCard();
         controllerGame.updateColorIcon(table.peek().getColor());
         int[] points = new int[4];
@@ -127,10 +123,17 @@ public class EngineGame
         for(ACard.Color color : ACard.Color.values())
         {
             if(color == ACard.Color.BLACK) break;
-            deck.add(new RegularCard(0, color));
+            ACard zero = new RegularCard(0, color);
+            deck.add(zero);
+            setOfCards.add(zero);
             for (int i = 1; i < 10; ++i)
             {
-                deck.add(new RegularCard(i, color));
+                ACard first = new RegularCard(i, color);
+                ACard second = new RegularCard(i, color);
+                deck.add(first);
+                deck.add(second);
+                setOfCards.add(first);
+                //setOfCards.add(second);
             }
             //deck.add(new StopCard(color));
             //deck.add(new StopCard(color));
@@ -152,7 +155,7 @@ public class EngineGame
         ACard topCard = table.pop();
         deck.addAll(table);
         for (ACard card:
-             deck)
+                deck)
         {
             if(card instanceof TakeFourCard || card instanceof ChColorCard)
                 card.setColor(ACard.Color.BLACK);
@@ -163,10 +166,10 @@ public class EngineGame
     }
     public void switchDirection()
     {
-        if(direction == Direction.CLOCKWISE)
-            direction = Direction.COUNTERCLOCKWISE;
+        if(direction == EngineGame.Direction.CLOCKWISE)
+            direction = EngineGame.Direction.COUNTERCLOCKWISE;
         else
-            direction = Direction.CLOCKWISE;
+            direction = EngineGame.Direction.CLOCKWISE;
     }
     public boolean isCardMatch(ACard card)
     {
@@ -219,12 +222,12 @@ public class EngineGame
             return;
         }
         if(card instanceof ISpecialCard)
-            ((ISpecialCard) card).action(this);
+            ;//((ISpecialCard) card).action(this);
         nextTurn();
     }
     /*
-    * Metoda pobiera jedna karte dla gracza i pyta gracza czy chce rzucic na stol czy zachowac
-    * w rece
+     * Metoda pobiera jedna karte dla gracza i pyta gracza czy chce rzucic na stol czy zachowac
+     * w rece
      */
     public void takeOne()
     {
@@ -238,7 +241,7 @@ public class EngineGame
             {
                 table.add(firstCard);
                 if(firstCard instanceof ISpecialCard)
-                    ((ISpecialCard) firstCard).action(this);
+                    ;//((ISpecialCard) firstCard).action(this);
             }
             else
             {
@@ -262,7 +265,7 @@ public class EngineGame
         {
             table.add(firstCard);
             if(firstCard instanceof ISpecialCard)
-                ((ISpecialCard) firstCard).action(this);
+                ;//((ISpecialCard) firstCard).action(this);
         }
         else
         {
@@ -270,8 +273,8 @@ public class EngineGame
         }
     }
     /*
-    * Metoda pobiera karty dla gracze i sprawdza czy pierwsza karta ratuje gracza od dobierania
-    * */
+     * Metoda pobiera karty dla gracze i sprawdza czy pierwsza karta ratuje gracza od dobierania
+     * */
     public void takeCards()
     {
         //Czy gracz posiada karte
@@ -284,14 +287,14 @@ public class EngineGame
                 if(actualPlayer() instanceof AIPlayer)
                 {
                     table.add(card);
-                    ((ISpecialCard)card).action(this);
+                    //((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
                 else if(controllerGame.matchCardDialog(card))
                 {
                     table.add(card);
-                    ((ISpecialCard)card).action(this);
+                    //((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
@@ -302,18 +305,18 @@ public class EngineGame
             int index = actualPlayer().isTakeFourCardPossessed();
             if(index >= 0)
             {
-               ACard card = actualPlayer().getHand().remove(index);
+                ACard card = actualPlayer().getHand().remove(index);
                 if(actualPlayer() instanceof AIPlayer)
                 {
                     table.add(card);
-                    ((ISpecialCard)card).action(this);
+                    //((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
                 else if(controllerGame.matchCardDialog(card))
                 {
                     table.add(card);
-                    ((ISpecialCard)card).action(this);
+                    //((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
@@ -325,10 +328,10 @@ public class EngineGame
             clearTable();
         firstCard = deck.remove(0);
         if(firstCard instanceof TakeTwoCard && table.peek() instanceof TakeTwoCard ||
-            firstCard instanceof TakeFourCard && table.peek() instanceof TakeFourCard)
+                firstCard instanceof TakeFourCard && table.peek() instanceof TakeFourCard)
         {
             table.add(firstCard);
-            ((ISpecialCard) firstCard).action(this);
+            //((ISpecialCard) firstCard).action(this);
             nextTurn();
             return;
         }
@@ -347,9 +350,9 @@ public class EngineGame
         nextTurn();
     }
     /*
-    * Metoda przesowa wskaznik aktualnego gracza na nastepna pozycje uwzgledniajac kierunek rozgrywki
-    * Zwraca true gdy jeden z graczy wygra
-    * */
+     * Metoda przesowa wskaznik aktualnego gracza na nastepna pozycje uwzgledniajac kierunek rozgrywki
+     * Zwraca true gdy jeden z graczy wygra
+     * */
     public void nextTurn()
     {
         controllerGame.disableAll();
@@ -374,7 +377,7 @@ public class EngineGame
             do
             {
                 actualPlayer().unfreeze();
-                if(direction == Direction.CLOCKWISE)
+                if(direction == EngineGame.Direction.CLOCKWISE)
                 {
                     if(iActualPlayer == iLastPlayer)
                         iActualPlayer = 0;
@@ -431,30 +434,30 @@ public class EngineGame
             fileName += "wild_colora_changer_large";
         else
         {
-           switch(card.getColor())
-           {
-               case RED:
-                   fileName += "red_";
-                   break;
-               case BLUE:
-                   fileName += "blue_";
-                   break;
-               case YELLOW:
-                   fileName += "yellow_";
-                   break;
-               case GREEN:
-                   fileName += "green_";
-                   break;
-           }
-           if(card instanceof RegularCard)
-               fileName += Integer.toString(((RegularCard) card).getDigit()) + "_";
-           else if(card instanceof StopCard)
-               fileName += "skip_";
-           else if (card instanceof TakeTwoCard)
-               fileName += "picker_";
-           else
-               fileName += "reverse_";
-           fileName += "large";
+            switch(card.getColor())
+            {
+                case RED:
+                    fileName += "red_";
+                    break;
+                case BLUE:
+                    fileName += "blue_";
+                    break;
+                case YELLOW:
+                    fileName += "yellow_";
+                    break;
+                case GREEN:
+                    fileName += "green_";
+                    break;
+            }
+            if(card instanceof RegularCard)
+                fileName += Integer.toString(((RegularCard) card).getDigit()) + "_";
+            else if(card instanceof StopCard)
+                fileName += "skip_";
+            else if (card instanceof TakeTwoCard)
+                fileName += "picker_";
+            else
+                fileName += "reverse_";
+            fileName += "large";
         }
         return fileName += ".png";
     }
@@ -463,8 +466,8 @@ public class EngineGame
         if(((AIPlayer)actualPlayer()).matchMyCards())
         {
             ACard card = ((AIPlayer)actualPlayer()).playCard();
-            if(card instanceof ISpecialCard)
-                ((ISpecialCard) card).action(this);
+            //if(card instanceof ISpecialCard)
+                //((ISpecialCard) card).action(this);
             table.add(card);
         }
         else

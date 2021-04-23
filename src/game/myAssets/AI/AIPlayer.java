@@ -1,5 +1,7 @@
-package game.myAssets;
+package game.myAssets.AI;
 
+import game.myAssets.EngineGameSp;
+import game.myAssets.Player;
 import game.myAssets.cards.ACard;
 import game.myAssets.cards.ISpecialCard;
 import game.myAssets.cards.RegularCard;
@@ -10,6 +12,7 @@ import java.util.Vector;
 
 public class AIPlayer extends Player
 {
+    /*
     final int ALL_CARDS_IN_GAME = 108;
     final int REGULAR_CARDS_IN_GAME = 76;
     final int TAKE_TWO_CARDS_IN_GAME = 8;
@@ -17,7 +20,7 @@ public class AIPlayer extends Player
     final int SWITCH_CARDS_IN_GAME = 8;
     final int TAKE_FOUR_CARDS_IN_GAME = 4;
     final int CHANGE_COLOR_CARDS_IN_GAME = 4;
-
+*/
     int myActionCards = 0;
     int myRegularCards = 0;
 
@@ -27,19 +30,13 @@ public class AIPlayer extends Player
     int myYellowCards = 0;
     int myBlackCards = 0;
 
-    int playedRedCards = 0;
-    int playedBlueCards = 0;
-    int playedGreenCards = 0;
-    int playedYellowCards = 0;
-    int playedBlackCards = 0;
-    int TakeTwoCardUsed = 0;
-    int TakeFourCardUsed = 0;
-
     int nextPlayerHandSize = 0;
     ACard opponentFailedCard = null;
 
     Vector<ACard>matchingCards = new Vector<>();
     Stack<ACard> table;
+
+    MyTreeMonteCarlo minMaxTree;
 
     public AIPlayer(Stack<ACard> table)
     {
@@ -83,7 +80,7 @@ public class AIPlayer extends Player
 
     public void profileOpponent(Player nextPlayer)
     {
-       opponentFailedCard = nextPlayer.failedCard;
+       //opponentFailedCard = nextPlayer.failedCard;
     }
 
     private Pair<ACard.Color, Integer>[] pack()
@@ -186,27 +183,8 @@ public class AIPlayer extends Player
         return pickedCard;
     }
 
-    private double deflectionProbability(long n, long k)
+    public void createMinMaxTree(EngineGameSp gameState)
     {
-        double probability;
-        if (n < k) return 0;
-        if (n == k) return 1;
-        long delta, iMax;
-        if (k < n-k)
-        {
-            delta = n-k;
-            iMax = k;
-        }else
-        {
-            delta = k;
-            iMax = n-k;
-        }
-        long ans = delta + 1;
-        for (long i = 2; i <= iMax; ++i)
-        {
-            ans = (ans * (delta + i)) / i;
-        }
-        probability = (TAKE_TWO_CARDS_IN_GAME - TakeTwoCardUsed) / ans;
-        return 0.0;
+
     }
 }
