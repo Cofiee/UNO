@@ -48,9 +48,9 @@ public class ControllerGameSp
     @FXML
     void initialize()
     {
-        int playersNumber = numberOfPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER);
-        int AiNumber = numberOfAiPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER, playersNumber);
-        engineGameSp.initializePlayers(playersNumber, AiNumber);
+        //int playersNumber = numberOfPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER);
+        int AiNumber = numberOfAiPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER, 1);
+        engineGameSp.initializePlayers();
         engineGameSp.prepareGame();
         updatePlayerHand();
     }

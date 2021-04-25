@@ -30,16 +30,11 @@ public class EngineGameSp
     {
         this.controllerGame = controller;
     }
-    public void initializePlayers(int numberOfPlayers, int numberOfAi)
+    public void initializePlayers()
     {
-        if(numberOfPlayers > MAX_PLAYERS_NUMBER) return;//throw new Exception();
-        if(numberOfAi > MAX_PLAYERS_NUMBER - numberOfPlayers) return;
-        players = new Player[numberOfPlayers + numberOfAi];
-        this.iLastPlayer = players.length - 1;
-        for(int i = 0; i < numberOfPlayers; ++i)
-            players[i] = new Player();
-        for(int i = numberOfPlayers; i < numberOfPlayers + numberOfAi; ++i)
-            players[i] = new AIPlayer(table);
+            players = new Player[2];
+            players[0] = new Player();
+            players[1] = new AIPlayer(table);
     }
     public Player[] getPlayers()
     {
@@ -65,6 +60,10 @@ public class EngineGameSp
     public void setNumberOfTakenCards(int number)
     {
         numberOfTakenCards = number;
+    }
+    public Vector<ACard> getDeck()
+    {
+        return deck;
     }
     public String getTopDigitString()
     {
@@ -94,7 +93,7 @@ public class EngineGameSp
     {
         if(players == null)
         {
-            initializePlayers(1, 1);
+            initializePlayers();
         }
         table.clear();
         prepareDeck();
@@ -112,6 +111,7 @@ public class EngineGameSp
             table.push(deck.remove(0));
         }
         ((AIPlayer)players[1]).createMinMaxTree(this);
+        ACard card = ((AIPlayer)players[1]).myTreeMonteCarlo.search();
         controllerGame.updateTopCard();
         controllerGame.updateColorIcon(table.peek().getColor());
         int[] points = new int[4];

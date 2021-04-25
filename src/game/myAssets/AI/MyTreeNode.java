@@ -9,14 +9,14 @@ import java.util.Vector;
 
 public class MyTreeNode
 {
-    private int visitCount = 0;
-    private int winCount = 0;
+    public int visitCount = 0;
+    public int winCount = 0;
     private MyTreeNode parent = null;
     private boolean isMaxPlayer;
     private ACard topCard;
     private Vector<ACard> deck;
     private Vector<ACard> myHand;
-    int opponentHandSize;
+    int opponentHandSize = 7;
     Vector<MyTreeNode> children = new Vector<>();
 
     public MyTreeNode(ACard topCard, boolean isMaxPlayer, Vector<ACard> myHand, Vector<ACard> deck)
@@ -34,7 +34,17 @@ public class MyTreeNode
         this.topCard = topCard;
         this.myHand = (Vector<ACard>)parent.getMyHand().clone();
         myHand.remove(topCard);
-        this.deck = parent.deck;
+        this.deck = (Vector<ACard>)parent.deck.clone();
+    }
+
+    public int getVisitCount()
+    {
+        return visitCount;
+    }
+
+    public int getWinCount()
+    {
+        return winCount;
     }
 
     public ACard getTopCard()
@@ -62,14 +72,14 @@ public class MyTreeNode
         return children;
     }
 
-    public int getVisitCount()
+    public int getOpponentHandSize()
     {
-        return visitCount;
+        return opponentHandSize;
     }
 
-    public int getWinCount()
+    public Vector<ACard> getDeck()
     {
-        return winCount;
+        return deck;
     }
 
     public ArrayList<ACard> getPossibleMoves()
@@ -101,7 +111,7 @@ public class MyTreeNode
 
     public  Vector<MyTreeNode> createChildren()
     {
-
+        children.clear();
         ArrayList<ACard> possibleMoves = getPossibleMoves();
         if(possibleMoves.size() > 0)
         {
@@ -113,7 +123,7 @@ public class MyTreeNode
         }
         else
         {
-            MyTreeNode child = new MyTreeNode(topCard, parent);
+            MyTreeNode child = new MyTreeNode(topCard, this);
             child.drawOne();
             this.children.add(child);
         }
@@ -128,14 +138,17 @@ public class MyTreeNode
             if(takenCard.getColor() == ACard.Color.BLACK)
             {
                 topCard = takenCard;
+                return;
             }
             else if(takenCard.getClass() == topCard.getClass())
             {
                 topCard = takenCard;
+                return;
             }
             else if(takenCard.getColor() == topCard.getColor())
             {
                 topCard = takenCard;
+                return;
             }
         }
         else
@@ -146,10 +159,12 @@ public class MyTreeNode
                         || ((RegularCard) takenCard).getDigit() == ((RegularCard) topCard).getDigit())
                 {
                     topCard = takenCard;
+                    return;
                 }
             }else if(takenCard.getColor() == topCard.getColor())
             {
                 topCard = takenCard;
+                return;
             }
         }
         myHand.add(takenCard);

@@ -36,7 +36,7 @@ public class AIPlayer extends Player
     Vector<ACard>matchingCards = new Vector<>();
     Stack<ACard> table;
 
-    MyTreeMonteCarlo minMaxTree;
+    public MyTreeMonteCarlo myTreeMonteCarlo;
 
     public AIPlayer(Stack<ACard> table)
     {
@@ -185,6 +185,7 @@ public class AIPlayer extends Player
 
     public void createMinMaxTree(EngineGameSp gameState)
     {
-
+        myTreeMonteCarlo = new MyTreeMonteCarlo(gameState.getTopCard(), true, hand,
+                7, gameState.getDeck());
     }
 }
