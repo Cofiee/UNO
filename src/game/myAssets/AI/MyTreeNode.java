@@ -5,6 +5,7 @@ import game.myAssets.cards.ISpecialCard;
 import game.myAssets.cards.RegularCard;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Vector;
 
 public class MyTreeNode
@@ -16,7 +17,7 @@ public class MyTreeNode
     private ACard topCard;
     private Vector<ACard> deck;
     private Vector<ACard> myHand;
-    int opponentHandSize = 7;
+    private Vector<ACard> deterministicOpponentHand = new Vector<>();
     Vector<MyTreeNode> children = new Vector<>();
 
     public MyTreeNode(ACard topCard, boolean isMaxPlayer, Vector<ACard> myHand, Vector<ACard> deck)
@@ -27,13 +28,17 @@ public class MyTreeNode
         this.deck = deck;
     }
 
-    public MyTreeNode(ACard topCard, MyTreeNode parent)
+    public MyTreeNode(ACard topCard, boolean isMaxPlayer, MyTreeNode parent)
     {
         this.parent = parent;
-        this.isMaxPlayer = parent.isMaxPlayer;
+        this.isMaxPlayer = isMaxPlayer;
         this.topCard = topCard;
         this.myHand = (Vector<ACard>)parent.getMyHand().clone();
-        myHand.remove(topCard);
+        this.deterministicOpponentHand = (Vector<ACard>) parent.deterministicOpponentHand.clone();
+        if(!this.isMaxPlayer)
+            myHand.remove(topCard);
+        else
+            deterministicOpponentHand.remove(topCard);
         this.deck = (Vector<ACard>)parent.deck.clone();
     }
 
@@ -74,7 +79,7 @@ public class MyTreeNode
 
     public int getOpponentHandSize()
     {
-        return opponentHandSize;
+        return deterministicOpponentHand.size();
     }
 
     public Vector<ACard> getDeck()
@@ -84,10 +89,15 @@ public class MyTreeNode
 
     public ArrayList<ACard> getPossibleMoves()
     {
+        Vector<ACard> actualPlayerHand;
+        if(this.isMaxPlayer)
+            actualPlayerHand = myHand;
+        else
+            actualPlayerHand = deterministicOpponentHand;
         ArrayList<ACard> matchingCards = new ArrayList<ACard>();
         if(this.topCard instanceof ISpecialCard)
         {
-            for (ACard card: this.myHand)
+            for (ACard card: actualPlayerHand)
             {
                 if(card.getColor() == this.topCard.getColor() || card.getColor() == ACard.Color.BLACK)
                     matchingCards.add(card);
@@ -95,7 +105,7 @@ public class MyTreeNode
         }
         else if(this.topCard instanceof RegularCard)
         {
-            for (ACard card: this.myHand)
+            for (ACard card: actualPlayerHand)
             {
                 if(card instanceof RegularCard &&
                         (((RegularCard) card).getDigit() == ((RegularCard)this.topCard).getDigit() ||
@@ -118,12 +128,12 @@ public class MyTreeNode
             for (ACard possibleMove:
                     possibleMoves)
             {
-                this.children.add(new MyTreeNode(possibleMove, this));
+                this.children.add(new MyTreeNode(possibleMove, !this.isMaxPlayer, this));
             }
         }
         else
         {
-            MyTreeNode child = new MyTreeNode(topCard, this);
+            MyTreeNode child = new MyTreeNode(topCard, !this.isMaxPlayer, this);
             child.drawOne();
             this.children.add(child);
         }
@@ -167,6 +177,16 @@ public class MyTreeNode
                 return;
             }
         }
-        myHand.add(takenCard);
+        if(this.isMaxPlayer)
+            deterministicOpponentHand.add(takenCard);
+        else
+            myHand.add(takenCard);
+    }
+
+    public void determine()
+    {
+        Collections.shuffle(deck);
+        for(int i = 0; i < 7; ++i)
+            deterministicOpponentHand.add(deck.remove(0));
     }
 }

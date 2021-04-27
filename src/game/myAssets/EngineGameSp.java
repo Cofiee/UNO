@@ -32,6 +32,7 @@ public class EngineGameSp
     }
     public void initializePlayers()
     {
+            this.iLastPlayer = 1;
             players = new Player[2];
             players[0] = new Player();
             players[1] = new AIPlayer(table);
@@ -110,8 +111,8 @@ public class EngineGameSp
             deck.add(table.pop());
             table.push(deck.remove(0));
         }
-        ((AIPlayer)players[1]).createMinMaxTree(this);
-        ACard card = ((AIPlayer)players[1]).myTreeMonteCarlo.search();
+        //((AIPlayer)players[1]).createMinMaxTree(this);
+        //ACard card = ((AIPlayer)players[1]).myTreeMonteCarlo.search();
         controllerGame.updateTopCard();
         controllerGame.updateColorIcon(table.peek().getColor());
         int[] points = new int[4];
@@ -465,7 +466,10 @@ public class EngineGameSp
     {
         if(((AIPlayer)actualPlayer()).matchMyCards())
         {
-            ACard card = ((AIPlayer)actualPlayer()).playCard();
+            //ACard card = ((AIPlayer)actualPlayer()).playCard();
+            ((AIPlayer)players[1]).createMinMaxTree(this);
+            ACard card = ((AIPlayer)actualPlayer()).myTreeMonteCarlo.search();
+            actualPlayer().getHand().remove(card);
             //if(card instanceof ISpecialCard)
                 //((ISpecialCard) card).action(this);
             table.add(card);

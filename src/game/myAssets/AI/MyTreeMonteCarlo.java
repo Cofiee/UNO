@@ -6,7 +6,7 @@ import java.util.*;
 
 public class MyTreeMonteCarlo
 {
-    private final int ITERATIONS = 10;
+    private final int ITERATIONS = 3000;
 
     private Random randomGenerator = new Random();
     MyTreeNode head;
@@ -31,46 +31,48 @@ public class MyTreeMonteCarlo
     //ISMCTS
     public ACard search()
     {
-        //ArrayList<ACard> matchingCards = getPossibleMoves(node);
-        //DOKONCZYC ISMCTS
+        if(head.getChildren().size() == 0)
+            head.createChildren();
         for(int i = 0; i < this.ITERATIONS; ++i)
         {
             MyTreeNode bestChild = selection(head);
-            if(bestChild.getMyHand().size() != 0) //expantion
+
+            if(bestChild.getChildren().size() == 0) //expantion
                 bestChild.createChildren();
             MyTreeNode nodeToExploration = bestChild;
+            //-----
+            nodeToExploration = cloneAndRandomize(nodeToExploration);
+            //-----
             if(bestChild.getChildren().size() > 0)
             {
                 int randomIndex = randomGenerator.nextInt(bestChild.getChildren().size());
                 nodeToExploration = bestChild.getChildren().get(randomIndex);
             }
             int outcome = simulation(nodeToExploration); //rollout
-            backpropagation(nodeToExploration, outcome); //backpropagation
-            System.out.println(nodeToExploration.visitCount + "  " + nodeToExploration.winCount);
+            backpropagation(bestChild, outcome); //backpropagation
+        }
+        for (MyTreeNode child:
+                head.children)
+        {
+            System.out.println(child.visitCount + "  " + child.winCount);
         }
         MyTreeNode winnerNode = selection(head);
-        head = winnerNode;
         return winnerNode.getTopCard();
     }
-    public MyTreeNode selection(MyTreeNode rootNode)
+
+    public MyTreeNode selection(MyTreeNode node)
     {
-        if(rootNode.getChildren().size() == 0)
-            rootNode.createChildren();
-        Vector<MyTreeNode> children = rootNode.getChildren();
+        Vector<MyTreeNode> children = node.getChildren();
         MyTreeNode bestMove = children.get(0);
         double bestUTC = Integer.MIN_VALUE;
         if(children.size() > 0)
         {
             for (MyTreeNode child: children)
             {
-                int parentVisitCount = rootNode.getVisitCount();
+                int parentVisitCount = node.getVisitCount();
                 int childVisitCount = child.getVisitCount();
-                if(childVisitCount == 0)
-                {
-                    childVisitCount = Integer.MAX_VALUE;
-                }
-                double vi = child.getWinCount() / childVisitCount;
-                double calcedUTC = calcUCT(vi, parentVisitCount, childVisitCount);
+                int win = child.getWinCount();
+                double calcedUTC = calcUCT(win, parentVisitCount, childVisitCount);
                 if(calcedUTC > bestUTC)
                 {
                     bestUTC = calcedUTC;
@@ -84,15 +86,19 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     * Vi is the average reward/value of all nodes beneath this node
-     * N is the number of times the parent node has been visited, and
+     * winCount is reward value of all nodes beneath this node
+     * N is the number of times the parent node has been simulated, and
      * ni is the number of times the child node i has been visited
      * */
-    private double calcUCT(double vi, int bigN, int ni)
+    private double calcUCT(double winCount, int bigN, int ni)
     {
+        if(ni == 0)
+        {
+            return Integer.MAX_VALUE;
+        }
         double c = 2.0; //state parameter
         double rootBase = Math.log(bigN) / ni;
-        return vi + c * Math.sqrt(rootBase);
+        return winCount / ni + c * Math.sqrt(rootBase);
     }
 
     public int simulation(MyTreeNode node)
@@ -124,7 +130,18 @@ public class MyTreeMonteCarlo
 
     public void backpropagation(MyTreeNode nodeToExplore, int simulationResult)
     {
-        nodeToExplore.visitCount++;
-        nodeToExplore.winCount += simulationResult;
+        while(nodeToExplore != null)
+        {
+            nodeToExplore.visitCount++;
+            nodeToExplore.winCount += simulationResult;
+            nodeToExplore = nodeToExplore.getParent();
+        }
+    }
+
+    private MyTreeNode cloneAndRandomize(MyTreeNode node)
+    {
+        MyTreeNode clonedNode = new MyTreeNode(node.getTopCard(), true, node );
+        clonedNode.determine();
+        return clonedNode;
     }
 }
