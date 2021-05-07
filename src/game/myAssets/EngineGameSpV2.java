@@ -1,17 +1,20 @@
 package game.myAssets;
 
 import game.ControllerGameSp;
-import game.myAssets.AI.AIPlayer;
 import game.myAssets.cards.*;
+import game.myAssets.AI.AIPlayer;
 import javafx.scene.control.Alert;
 import scoreboard.ScoreManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Stack;
+import java.util.Vector;
 
-public class EngineGameSp
+public class EngineGameSpV2
 {
     public int MAX_PLAYERS_NUMBER = 4;
-    private final ControllerGameSp controllerGame;
+    private ControllerGameSp controllerGame;
     Player[] players;
     enum Direction
     {
@@ -21,21 +24,32 @@ public class EngineGameSp
     EngineGame.Direction direction = EngineGame.Direction.CLOCKWISE;
     int iLastPlayer;
     int iActualPlayer = 0;
-    Stack<ACard> table = new Stack<>();
-    Vector<ACard> deck = new Vector<>();
-    ArrayList<ACard> setOfCards = new ArrayList<>();
     int numberOfTakenCards = 0;
 
-    public EngineGameSp(ControllerGameSp controller)
+    GameState state;
+
+    private EngineGameSpV2()
     {
+        state = new GameState();
+        state.table = new Stack<>();
+        state.redCards = new Vector<>();
+        state.blueCards = new Vector<>();
+        state.greenCards = new Vector<>();
+        state.yellowCards = new Vector<>();
+        state.deck = new Vector<>();
+        state.cardSet = new Vector<>();
+    }
+    public EngineGameSpV2(ControllerGameSp controller)
+    {
+        this();
         this.controllerGame = controller;
     }
     public void initializePlayers()
     {
-            this.iLastPlayer = 1;
-            players = new Player[2];
-            players[0] = new Player();
-            players[1] = new AIPlayer(table);
+        this.iLastPlayer = 1;
+        players = new Player[2];
+        players[0] = new Player();
+        players[1] = new AIPlayer(state);
     }
     public Player[] getPlayers()
     {
@@ -64,18 +78,18 @@ public class EngineGameSp
     }
     public Vector<ACard> getDeck()
     {
-        return deck;
+        return state.deck;
     }
     public String getTopDigitString()
     {
-        if(table.peek() instanceof RegularCard)
-            return  String.valueOf(((RegularCard) table.peek()).getDigit());
+        if(state.table.peek() instanceof RegularCard)
+            return  String.valueOf(((RegularCard) state.table.peek()).getDigit());
         else
-            return table.peek().getClass().getSimpleName();
+            return state.table.peek().getClass().getSimpleName();
     }
     public ACard getTopCard()
     {
-        return table.peek();
+        return state.table.peek();
     }
     public Player getNextPLayer()
     {
@@ -96,44 +110,43 @@ public class EngineGameSp
         {
             initializePlayers();
         }
-        table.clear();
+        state.table.clear();
         prepareDeck();
-        Collections.shuffle(deck);
+        Collections.shuffle(state.deck);
         for(Player player : players)
         {
             player.getHand().clear();
             for(int i = 0; i < 7; ++i)
-                player.getHand().add(deck.remove(0));
+                player.getHand().add(state.deck.remove(0));
         }
-        table.add(deck.remove(0));
-        while (table.peek() instanceof ISpecialCard)
+        state.table.add(state.deck.remove(0));
+        while (state.table.peek() instanceof ISpecialCard)
         {
-            deck.add(table.pop());
-            table.push(deck.remove(0));
+            state.deck.add(state.table.pop());
+            state.table.push(state.deck.remove(0));
         }
-        //((AIPlayer)players[1]).createMinMaxTree(this);
-        //ACard card = ((AIPlayer)players[1]).myTreeMonteCarlo.search();
+        state.playerHandSize = 7;
         controllerGame.updateTopCard();
-        controllerGame.updateColorIcon(table.peek().getColor());
+        controllerGame.updateColorIcon(state.table.peek().getColor());
         int[] points = new int[4];
         controllerGame.refreshScoreboard(points);
     }
     public void prepareDeck()
     {
-        deck.clear();
+        state.deck.clear();
         for(ACard.Color color : ACard.Color.values())
         {
             if(color == ACard.Color.BLACK) break;
             ACard zero = new RegularCard(0, color);
-            deck.add(zero);
-            setOfCards.add(zero);
+            state.deck.add(zero);
+            state.cardSet.add(zero);
             for (int i = 1; i < 10; ++i)
             {
                 ACard first = new RegularCard(i, color);
                 ACard second = new RegularCard(i, color);
-                deck.add(first);
-                deck.add(second);
-                setOfCards.add(first);
+                state.deck.add(first);
+                state.deck.add(second);
+                state.cardSet.add(first);
                 //setOfCards.add(second);
             }
             //deck.add(new StopCard(color));
@@ -153,17 +166,17 @@ public class EngineGameSp
     }
     public void clearTable()
     {
-        ACard topCard = table.pop();
-        deck.addAll(table);
+        ACard topCard = state.table.pop();
+        state.deck.addAll(state.table);
         for (ACard card:
-                deck)
+                state.deck)
         {
             if(card instanceof TakeFourCard || card instanceof ChColorCard)
                 card.setColor(ACard.Color.BLACK);
         }
-        Collections.shuffle(deck);
-        table.clear();
-        table.push(topCard);
+        Collections.shuffle(state.deck);
+        state.table.clear();
+        state.table.push(topCard);
     }
     public void switchDirection()
     {
@@ -180,25 +193,25 @@ public class EngineGameSp
             {
                 return true;
             }
-            else if(card.getClass() == table.peek().getClass())
+            else if(card.getClass() == state.table.peek().getClass())
             {
                 return true;
             }
-            else if(card.getColor() == table.peek().getColor())
+            else if(card.getColor() == state.table.peek().getColor())
             {
                 return true;
             }
         }
         else
         {
-            if (card.getClass() == table.peek().getClass())
+            if (card.getClass() == state.table.peek().getClass())
             {
-                if (card.getColor() == table.peek().getColor()
-                        || ((RegularCard) card).getDigit() == ((RegularCard) table.peek()).getDigit())
+                if (card.getColor() == state.table.peek().getColor()
+                        || ((RegularCard) card).getDigit() == ((RegularCard) state.table.peek()).getDigit())
                 {
                     return true;
                 }
-            }else if(card.getColor() == table.peek().getColor())
+            }else if(card.getColor() == state.table.peek().getColor())
             {
                 return true;
             }
@@ -208,10 +221,11 @@ public class EngineGameSp
     public void cardOnTable(int id)
     {
         ACard card = actualPlayer().getHand().elementAt(id);
-        ACard topCard = table.peek();
         if(isCardMatch(card))
         {
-            table.add(card);
+            state.failedCard = null;
+            state.cardSet.remove(card);
+            state.table.add(card);
             actualPlayer().getHand().remove(id);
         }
         else
@@ -226,21 +240,22 @@ public class EngineGameSp
             ;//((ISpecialCard) card).action(this);
         nextTurn();
     }
-    /*
-     * Metoda pobiera jedna karte dla gracza i pyta gracza czy chce rzucic na stol czy zachowac
-     * w rece
+
+    /**
+     * Metoda pobiera jedna karte dla gracza i pyta gracza czy chce rzucic na stol czy zachowac w rece
      */
     public void takeOne()
     {
+        state.failedCard = state.table.peek();
         ACard firstCard;
-        if(deck.isEmpty())
+        if(state.deck.isEmpty())
             clearTable();
-        firstCard = deck.remove(0);
+        firstCard = state.deck.remove(0);
         if(isCardMatch(firstCard))
         {
             if(controllerGame.matchCardDialog(firstCard))
             {
-                table.add(firstCard);
+                state.table.add(firstCard);
                 if(firstCard instanceof ISpecialCard)
                     ;//((ISpecialCard) firstCard).action(this);
             }
@@ -256,15 +271,19 @@ public class EngineGameSp
         }
         nextTurn();
     }
+
+    /**
+     * Metoda pobiera jedna karte dla gracza AI
+     */
     private void takeOneAi()
     {
         ACard firstCard;
-        if(deck.isEmpty())
+        if(state.deck.isEmpty())
             clearTable();
-        firstCard = deck.remove(0);
+        firstCard = state.deck.remove(0);
         if(isCardMatch(firstCard))
         {
-            table.add(firstCard);
+            state.table.add(firstCard);
             if(firstCard instanceof ISpecialCard)
                 ;//((ISpecialCard) firstCard).action(this);
         }
@@ -273,7 +292,7 @@ public class EngineGameSp
             actualPlayer().getHand().add(firstCard);
         }
     }
-    /*
+    /**
      * Metoda pobiera karty dla gracze i sprawdza czy pierwsza karta ratuje gracza od dobierania
      * */
     public void takeCards()
@@ -287,14 +306,14 @@ public class EngineGameSp
                 ACard card = actualPlayer().getHand().remove(index);
                 if(actualPlayer() instanceof AIPlayer)
                 {
-                    table.add(card);
+                    state.table.add(card);
                     //((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
                 else if(controllerGame.matchCardDialog(card))
                 {
-                    table.add(card);
+                    state.table.add(card);
                     //((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
@@ -309,14 +328,14 @@ public class EngineGameSp
                 ACard card = actualPlayer().getHand().remove(index);
                 if(actualPlayer() instanceof AIPlayer)
                 {
-                    table.add(card);
+                    state.table.add(card);
                     //((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
                 else if(controllerGame.matchCardDialog(card))
                 {
-                    table.add(card);
+                    state.table.add(card);
                     //((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
@@ -325,13 +344,13 @@ public class EngineGameSp
         }
         //Czy pierwsza karta ratuje
         ACard firstCard;
-        if(deck.isEmpty())
+        if(state.deck.isEmpty())
             clearTable();
-        firstCard = deck.remove(0);
-        if(firstCard instanceof TakeTwoCard && table.peek() instanceof TakeTwoCard ||
-                firstCard instanceof TakeFourCard && table.peek() instanceof TakeFourCard)
+        firstCard = state.deck.remove(0);
+        if(firstCard instanceof TakeTwoCard && state.table.peek() instanceof TakeTwoCard ||
+                firstCard instanceof TakeFourCard && state.table.peek() instanceof TakeFourCard)
         {
-            table.add(firstCard);
+            state.table.add(firstCard);
             //((ISpecialCard) firstCard).action(this);
             nextTurn();
             return;
@@ -343,14 +362,14 @@ public class EngineGameSp
             while(numberOfTakenCards > 0)
             {
                 --numberOfTakenCards;
-                if(deck.isEmpty())
+                if(state.deck.isEmpty())
                     clearTable();
-                actualPlayer().getHand().add(deck.remove(0));
+                actualPlayer().getHand().add(state.deck.remove(0));
             }
         }
         nextTurn();
     }
-    /*
+    /**
      * Metoda przesowa wskaznik aktualnego gracza na nastepna pozycje uwzgledniajac kierunek rozgrywki
      * Zwraca true gdy jeden z graczy wygra
      * */
@@ -375,6 +394,8 @@ public class EngineGameSp
                     return;
                 }
             }
+            if(!(actualPlayer() instanceof game.myAssets.AI.AIPlayer))
+                state.playerHandSize = actualPlayer().hand.size();
             do
             {
                 actualPlayer().unfreeze();
@@ -400,10 +421,7 @@ public class EngineGameSp
             }
             controllerGame.nextPlayerDialog();
             if(actualPlayer() instanceof AIPlayer)
-            {
-                ((AIPlayer)actualPlayer()).profileOpponent(getNextPLayer());
                 playAi();
-            }
         }while (actualPlayer() instanceof AIPlayer);
         controllerGame.enableAll();
     }
@@ -423,8 +441,8 @@ public class EngineGameSp
     }
     public void endGame()
     {
-        ScoreManager scoreManager = new ScoreManager("scoreboard.txt");
-        scoreManager.saveScore(players);
+       //ScoreManager scoreManager = new ScoreManager("scoreboard.txt");
+       //scoreManager.saveScore(players);
     }
     public String parseCard(ACard card)
     {
@@ -467,12 +485,13 @@ public class EngineGameSp
         if(((AIPlayer)actualPlayer()).matchMyCards())
         {
             //ACard card = ((AIPlayer)actualPlayer()).playCard();
-            ((AIPlayer)players[1]).createMinMaxTree(this);
+            ((AIPlayer)players[1]).createMCTS();
             ACard card = ((AIPlayer)actualPlayer()).myTreeMonteCarlo.search();
             actualPlayer().getHand().remove(card);
             //if(card instanceof ISpecialCard)
-                //((ISpecialCard) card).action(this);
-            table.add(card);
+            //((ISpecialCard) card).action(this);
+            state.table.remove(card);
+            state.table.add(card);
         }
         else
             takeOneAi();

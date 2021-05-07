@@ -1,5 +1,6 @@
 package game.myAssets.AI;
 
+import game.myAssets.GameState;
 import game.myAssets.cards.ACard;
 import game.myAssets.cards.ISpecialCard;
 import game.myAssets.cards.RegularCard;
@@ -14,32 +15,35 @@ public class MyTreeNode
     public int winCount = 0;
     private MyTreeNode parent = null;
     private boolean isMaxPlayer;
-    private ACard topCard;
-    private Vector<ACard> deck;
+    private GameState state;
     private Vector<ACard> myHand;
     private Vector<ACard> deterministicOpponentHand = new Vector<>();
     Vector<MyTreeNode> children = new Vector<>();
 
-    public MyTreeNode(ACard topCard, boolean isMaxPlayer, Vector<ACard> myHand, Vector<ACard> deck)
+    public MyTreeNode(GameState state, boolean isMaxPlayer, Vector<ACard> myHand)
     {
-        this.topCard = topCard;
+        this.state = state;
         this.isMaxPlayer = isMaxPlayer;
         this.myHand = myHand;
-        this.deck = deck;
     }
 
     public MyTreeNode(ACard topCard, boolean isMaxPlayer, MyTreeNode parent)
     {
+        state = new GameState(parent.state);
+        state.table.add(topCard);
         this.parent = parent;
         this.isMaxPlayer = isMaxPlayer;
-        this.topCard = topCard;
         this.myHand = (Vector<ACard>)parent.getMyHand().clone();
         this.deterministicOpponentHand = (Vector<ACard>) parent.deterministicOpponentHand.clone();
         if(!this.isMaxPlayer)
             myHand.remove(topCard);
         else
             deterministicOpponentHand.remove(topCard);
-        this.deck = (Vector<ACard>)parent.deck.clone();
+    }
+
+    public GameState getState()
+    {
+        return state;
     }
 
     public int getVisitCount()
@@ -54,7 +58,7 @@ public class MyTreeNode
 
     public ACard getTopCard()
     {
-        return topCard;
+        return state.table.peek();
     }
 
     public MyTreeNode getParent()
@@ -84,7 +88,7 @@ public class MyTreeNode
 
     public Vector<ACard> getDeck()
     {
-        return deck;
+        return state.deck;
     }
 
     public ArrayList<ACard> getPossibleMoves()
@@ -95,21 +99,21 @@ public class MyTreeNode
         else
             actualPlayerHand = deterministicOpponentHand;
         ArrayList<ACard> matchingCards = new ArrayList<ACard>();
-        if(this.topCard instanceof ISpecialCard)
+        if(state.table.peek() instanceof ISpecialCard)
         {
             for (ACard card: actualPlayerHand)
             {
-                if(card.getColor() == this.topCard.getColor() || card.getColor() == ACard.Color.BLACK)
+                if(card.getColor() == state.table.peek().getColor() || card.getColor() == ACard.Color.BLACK)
                     matchingCards.add(card);
             }
         }
-        else if(this.topCard instanceof RegularCard)
+        else if(state.table.peek() instanceof RegularCard)
         {
             for (ACard card: actualPlayerHand)
             {
                 if(card instanceof RegularCard &&
-                        (((RegularCard) card).getDigit() == ((RegularCard)this.topCard).getDigit() ||
-                                card.getColor() == this.topCard.getColor() ||
+                        (((RegularCard) card).getDigit() == ((RegularCard)state.table.peek()).getDigit() ||
+                                card.getColor() == state.table.peek().getColor() ||
                                 card.getColor() == ACard.Color.BLACK))
                 {
                     matchingCards.add(card);
@@ -119,7 +123,7 @@ public class MyTreeNode
         return matchingCards;
     }
 
-    public  Vector<MyTreeNode> createChildren()
+    public Vector<MyTreeNode> createChildren()
     {
         children.clear();
         ArrayList<ACard> possibleMoves = getPossibleMoves();
@@ -133,47 +137,51 @@ public class MyTreeNode
         }
         else
         {
-            MyTreeNode child = new MyTreeNode(topCard, !this.isMaxPlayer, this);
+            MyTreeNode child = new MyTreeNode(state.table.peek(), !this.isMaxPlayer, this);
             child.drawOne();
             this.children.add(child);
         }
         return this.children;
     }
 
+    /**
+    * Metoda odpowiada za symulacje dobrania jednej karty w przypadku braku mozliwosci znalezienia odpowiedniego wyboru
+    * */
     private void drawOne()
     {
-        ACard takenCard = deck.remove(0);
+        state.failedCard = state.table.peek();
+        ACard takenCard = state.cardSet.remove(0);
         if(takenCard instanceof ISpecialCard)
         {
             if(takenCard.getColor() == ACard.Color.BLACK)
             {
-                topCard = takenCard;
+                state.table.add(takenCard);
                 return;
             }
-            else if(takenCard.getClass() == topCard.getClass())
+            else if(takenCard.getClass() == state.table.peek().getClass())
             {
-                topCard = takenCard;
+                state.table.add(takenCard);
                 return;
             }
-            else if(takenCard.getColor() == topCard.getColor())
+            else if(takenCard.getColor() == state.table.peek().getColor())
             {
-                topCard = takenCard;
+                state.table.add(takenCard);
                 return;
             }
         }
         else
         {
-            if (takenCard.getClass() == topCard.getClass())
+            if (takenCard.getClass() == state.table.peek().getClass())
             {
-                if (takenCard.getColor() == topCard.getColor()
-                        || ((RegularCard) takenCard).getDigit() == ((RegularCard) topCard).getDigit())
+                if (takenCard.getColor() == state.table.peek().getColor()
+                        || ((RegularCard) takenCard).getDigit() == ((RegularCard) state.table.peek()).getDigit())
                 {
-                    topCard = takenCard;
+                    state.table.add(takenCard);
                     return;
                 }
-            }else if(takenCard.getColor() == topCard.getColor())
+            }else if(takenCard.getColor() == state.table.peek().getColor())
             {
-                topCard = takenCard;
+                state.table.add(takenCard);
                 return;
             }
         }
@@ -185,8 +193,18 @@ public class MyTreeNode
 
     public void determine()
     {
-        Collections.shuffle(deck);
-        for(int i = 0; i < 7; ++i)
-            deterministicOpponentHand.add(deck.remove(0));
+        Collections.shuffle(state.cardSet);
+        for(int i = 0; i < state.playerHandSize; ++i)
+        {
+            ACard card = state.cardSet.remove(0);
+            if(state.failedCard != null)
+            while (card.getColor() == state.failedCard.getColor() ||
+                    ((RegularCard)card).getDigit() == ((RegularCard)state.failedCard).getDigit())
+            {
+                state.cardSet.add(card);
+                card = state.cardSet.remove(0);
+            }
+            deterministicOpponentHand.add(card);
+        }
     }
 }

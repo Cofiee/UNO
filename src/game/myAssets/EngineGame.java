@@ -44,7 +44,7 @@ public class EngineGame
         for(int i = 0; i < numberOfPlayers; ++i)
             players[i] = new Player();
         for(int i = numberOfPlayers; i < numberOfPlayers + numberOfAi; ++i)
-            players[i] = new AIPlayer(table);
+            ;//players[i] = new AIPlayer(table);
     }
     public Player[] getPlayers()
     {
@@ -397,7 +397,7 @@ public class EngineGame
             controllerGame.nextPlayerDialog();
             if(actualPlayer() instanceof AIPlayer)
             {
-                ((AIPlayer)actualPlayer()).profileOpponent(getNextPLayer());
+                //((AIPlayer)actualPlayer()).profileOpponent(getNextPLayer());
                 playAi();
             }
         }while (actualPlayer() instanceof AIPlayer);

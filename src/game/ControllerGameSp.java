@@ -2,7 +2,7 @@ package game;
 
 import MainMenu.Main;
 import game.myAssets.AI.AIPlayer;
-import game.myAssets.EngineGameSp;
+import game.myAssets.EngineGameSpV2;
 import game.myAssets.cards.ACard;
 
 import javafx.event.EventHandler;
@@ -22,7 +22,7 @@ import java.util.*;
 
 public class ControllerGameSp
 {
-    final EngineGameSp engineGameSp;
+    final EngineGameSpV2 engineGameSp;
 
     @FXML
     Circle top_color;
@@ -43,7 +43,7 @@ public class ControllerGameSp
 
     public ControllerGameSp()
     {
-        this.engineGameSp = new EngineGameSp(this);
+        this.engineGameSp = new EngineGameSpV2(this);
     }
     @FXML
     void initialize()
@@ -54,10 +54,13 @@ public class ControllerGameSp
         engineGameSp.prepareGame();
         updatePlayerHand();
     }
-    /*
+
+    /**
      * Wyswietla dialog z zapytaniem o liczbe graczy
      * Zwraca wybrana liczbe graczy
-     * */
+     * @param maxPlayerNumber - maksymalna liczba graczy
+     * @return
+     */
     public int numberOfPlayersDialog(int maxPlayerNumber)
     {
         List<Integer> choices = new ArrayList<>();

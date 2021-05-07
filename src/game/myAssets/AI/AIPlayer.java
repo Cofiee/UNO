@@ -1,6 +1,6 @@
 package game.myAssets.AI;
 
-import game.myAssets.EngineGameSp;
+import game.myAssets.GameState;
 import game.myAssets.Player;
 import game.myAssets.cards.ACard;
 import game.myAssets.cards.ISpecialCard;
@@ -12,15 +12,6 @@ import java.util.Vector;
 
 public class AIPlayer extends Player
 {
-    /*
-    final int ALL_CARDS_IN_GAME = 108;
-    final int REGULAR_CARDS_IN_GAME = 76;
-    final int TAKE_TWO_CARDS_IN_GAME = 8;
-    final int STOP_CARDS_IN_GAME = 8;
-    final int SWITCH_CARDS_IN_GAME = 8;
-    final int TAKE_FOUR_CARDS_IN_GAME = 4;
-    final int CHANGE_COLOR_CARDS_IN_GAME = 4;
-*/
     int myActionCards = 0;
     int myRegularCards = 0;
 
@@ -34,13 +25,13 @@ public class AIPlayer extends Player
     ACard opponentFailedCard = null;
 
     Vector<ACard>matchingCards = new Vector<>();
-    Stack<ACard> table;
+    GameState state;
 
     public MyTreeMonteCarlo myTreeMonteCarlo;
 
-    public AIPlayer(Stack<ACard> table)
+    public AIPlayer(GameState state)
     {
-        this.table = table;
+        this.state = state;
     }
 
     public void scanHand()
@@ -78,11 +69,6 @@ public class AIPlayer extends Player
         }
     }
 
-    public void profileOpponent(Player nextPlayer)
-    {
-       //opponentFailedCard = nextPlayer.failedCard;
-    }
-
     private Pair<ACard.Color, Integer>[] pack()
     {
         return new Pair[]{
@@ -109,7 +95,7 @@ public class AIPlayer extends Player
     public boolean matchMyCards()
     {
         matchingCards.clear();
-        ACard topCard = table.peek();
+        ACard topCard = state.table.peek();
         if(topCard instanceof ISpecialCard)
         {
             for (ACard card: super.hand)
@@ -183,9 +169,8 @@ public class AIPlayer extends Player
         return pickedCard;
     }
 
-    public void createMinMaxTree(EngineGameSp gameState)
+    public void createMCTS()
     {
-        myTreeMonteCarlo = new MyTreeMonteCarlo(gameState.getTopCard(), true, hand,
-                7, gameState.getDeck());
+        myTreeMonteCarlo = new MyTreeMonteCarlo(state, true, hand);
     }
 }

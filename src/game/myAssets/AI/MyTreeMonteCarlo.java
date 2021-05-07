@@ -1,41 +1,56 @@
 package game.myAssets.AI;
 
+import game.myAssets.GameState;
 import game.myAssets.cards.ACard;
 
 import java.util.*;
 
 public class MyTreeMonteCarlo
 {
-    private final int ITERATIONS = 3000;
+    private final int ITERATIONS = 100000;
 
     private Random randomGenerator = new Random();
     MyTreeNode head;
     ArrayList<Integer> moves;
 
-
-    public MyTreeMonteCarlo(ACard topCard, boolean isMaxPlayer, Vector<ACard> myHand, int opponentHandSize ,Vector<ACard> deck)
+    /**
+     * Konstruktor tworzy obiekt obslugujacy wyszukiwanie monte carlo
+     * @param state
+     * @param isMaxPlayer
+     * @param myHand
+     */
+    public MyTreeMonteCarlo(GameState state, boolean isMaxPlayer, Vector<ACard> myHand)
     {
-        head = new MyTreeNode(topCard, isMaxPlayer, myHand, deck);
+        GameState deepClone = new GameState(state);
+        for (ACard card: myHand)
+        {
+            deepClone.cardSet.remove(card);
+        }
+        head = new MyTreeNode(deepClone, isMaxPlayer, myHand);
     }
 
     public MyTreeNode getHead()
     {
         return head;
     }
-
+/*
     public void setHead(MyTreeNode head)
     {
         this.head = head;
     }
+*/
 
-    //ISMCTS
+    /**
+     *
+     * @return
+     */
     public ACard search()
     {
         if(head.getChildren().size() == 0)
             head.createChildren();
         for(int i = 0; i < this.ITERATIONS; ++i)
         {
-            MyTreeNode bestChild = selection(head);
+            MyTreeNode bestChild = selection(head); //Selection
 
             if(bestChild.getChildren().size() == 0) //expantion
                 bestChild.createChildren();
@@ -51,15 +66,22 @@ public class MyTreeMonteCarlo
             int outcome = simulation(nodeToExploration); //rollout
             backpropagation(bestChild, outcome); //backpropagation
         }
+        System.out.println("Liczba Dzieci: " + head.children.size());
+        int i = 0;
         for (MyTreeNode child:
                 head.children)
         {
-            System.out.println(child.visitCount + "  " + child.winCount);
+            System.out.println("Dziecko " + i++ + "  " + child.visitCount + "  " + child.winCount);
         }
         MyTreeNode winnerNode = selection(head);
         return winnerNode.getTopCard();
     }
 
+    /**
+     *
+     * @param node
+     * @return
+     */
     public MyTreeNode selection(MyTreeNode node)
     {
         Vector<MyTreeNode> children = node.getChildren();
@@ -101,6 +123,11 @@ public class MyTreeMonteCarlo
         return winCount / ni + c * Math.sqrt(rootBase);
     }
 
+    /**
+     *
+     * @param node
+     * @return
+     */
     public int simulation(MyTreeNode node)
     {
         MyTreeNode tmpNode = node;
@@ -120,6 +147,12 @@ public class MyTreeMonteCarlo
         }
     }
 
+    /**
+     *
+     * @param node
+     * @return
+     */
+    ///*
     public MyTreeNode randomPlay(MyTreeNode node)
     {
         node.createChildren();
@@ -127,7 +160,42 @@ public class MyTreeMonteCarlo
         MyTreeNode radomChoice = node.getChildren().get(randomGenerator.nextInt(bounds));
         return radomChoice;
     }
-
+//*/
+    /*
+    public MyTreeNode randomPlay(MyTreeNode node)
+    {
+        node.createChildren();
+        int bestIndex = 0;
+        double evaluation = Integer.MIN_VALUE;
+        Vector<MyTreeNode> children = node.getChildren();
+        for(int i = 0; i > children.size(); ++i)
+        {
+            double result = evaluate(children.get(i));
+            if(result > evaluation)
+            {
+                evaluation = result;
+                bestIndex = i;
+            }
+        }
+        //int bounds = node.getChildren().size();
+        //MyTreeNode radomChoice = node.getChildren().get(randomGenerator.nextInt(bounds));
+        MyTreeNode radomChoice = children.get(bestIndex);
+        radomChoice.getState().failedCard = null;
+        return radomChoice;
+    }
+*/
+    /*
+    public double evaluate(MyTreeNode myTreeNode)
+    {
+        GameState state = myTreeNode.getState();
+        if(state)
+    }
+*/
+    /**
+     *
+     * @param nodeToExplore
+     * @param simulationResult
+     */
     public void backpropagation(MyTreeNode nodeToExplore, int simulationResult)
     {
         while(nodeToExplore != null)
@@ -138,6 +206,11 @@ public class MyTreeMonteCarlo
         }
     }
 
+    /**
+     *
+     * @param node
+     * @return
+     */
     private MyTreeNode cloneAndRandomize(MyTreeNode node)
     {
         MyTreeNode clonedNode = new MyTreeNode(node.getTopCard(), true, node );
