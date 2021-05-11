@@ -50,7 +50,7 @@ public class ControllerGameSp
     {
         //int playersNumber = numberOfPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER);
         int AiNumber = numberOfAiPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER, 1);
-        engineGameSp.initializePlayers();
+        engineGameSp.initializePlayers(AiNumber);
         engineGameSp.prepareGame();
         updatePlayerHand();
     }
@@ -323,6 +323,24 @@ public class ControllerGameSp
                 points)
         {
             score_board.getChildren().add(new Label("Player " + i + ":  " + point));
+        }
+    }
+    public void updateHandSizes(int indexUpdatedPlayer, int handSize)
+    {
+        if(indexUpdatedPlayer == 1)
+        {
+            player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
+            player_position_1_vbox.getChildren().add(new Label("Player " + indexUpdatedPlayer + ":  " + handSize));
+        }
+        else if(indexUpdatedPlayer == 2)
+        {
+            player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
+            player_position_2_hbox.getChildren().add(new Label("Player " + indexUpdatedPlayer + ":  " + handSize));
+        }
+        else if(indexUpdatedPlayer == 3)
+        {
+            player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+            player_position_3_vbox.getChildren().add(new Label("Player " + indexUpdatedPlayer + ":  " + handSize));
         }
     }
     @FXML

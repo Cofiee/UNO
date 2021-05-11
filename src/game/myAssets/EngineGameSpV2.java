@@ -1,12 +1,10 @@
 package game.myAssets;
 
 import game.ControllerGameSp;
-import game.myAssets.cards.*;
 import game.myAssets.AI.AIPlayer;
+import game.myAssets.cards.*;
 import javafx.scene.control.Alert;
-import scoreboard.ScoreManager;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Stack;
 import java.util.Vector;
@@ -15,105 +13,56 @@ public class EngineGameSpV2
 {
     public int MAX_PLAYERS_NUMBER = 4;
     private ControllerGameSp controllerGame;
-    Player[] players;
-    enum Direction
-    {
-        CLOCKWISE,
-        COUNTERCLOCKWISE
-    }
-    EngineGame.Direction direction = EngineGame.Direction.CLOCKWISE;
-    int iLastPlayer;
-    int iActualPlayer = 0;
-    int numberOfTakenCards = 0;
 
-    GameState state;
+    GameStateV2 state;
 
     private EngineGameSpV2()
     {
-        state = new GameState();
-        state.table = new Stack<>();
-        state.redCards = new Vector<>();
-        state.blueCards = new Vector<>();
-        state.greenCards = new Vector<>();
-        state.yellowCards = new Vector<>();
-        state.deck = new Vector<>();
-        state.cardSet = new Vector<>();
+        state = new GameStateV2();
     }
     public EngineGameSpV2(ControllerGameSp controller)
     {
         this();
         this.controllerGame = controller;
     }
-    public void initializePlayers()
-    {
-        this.iLastPlayer = 1;
-        players = new Player[2];
-        players[0] = new Player();
-        players[1] = new AIPlayer(state);
-    }
-    public Player[] getPlayers()
-    {
-        return players;
-    }
+
     public int getIActualPlayer()
     {
-        return iActualPlayer;
+        return state.actualPlayerIndex;
     }
+
     public Player actualPlayer()
     {
-        return players[iActualPlayer];
+        return state.players.get(state.actualPlayerIndex);
     }
-    public EngineGame.Direction getDirection()
-    {
-        return direction;
-    }
-    public ControllerGameSp getControllerGame(){return controllerGame;}
-    public int getNumberOfTakenCards()
-    {
-        return this.numberOfTakenCards;
-    }
-    public void setNumberOfTakenCards(int number)
-    {
-        numberOfTakenCards = number;
-    }
-    public Vector<ACard> getDeck()
-    {
-        return state.deck;
-    }
-    public String getTopDigitString()
-    {
-        if(state.table.peek() instanceof RegularCard)
-            return  String.valueOf(((RegularCard) state.table.peek()).getDigit());
-        else
-            return state.table.peek().getClass().getSimpleName();
-    }
+
     public ACard getTopCard()
     {
         return state.table.peek();
     }
-    public Player getNextPLayer()
+
+    public void initializePlayers(int numberOfAi)
     {
-        switch (direction)
+        state.players.add(new Player());
+        state.playersHandsSizes = new int[state.players.size() + numberOfAi];
+        for(int i = 0; i < state.players.size(); ++i)
         {
-            case CLOCKWISE:
-                if(iActualPlayer == iLastPlayer) return players[0];
-                else return players[iActualPlayer + 1];
-            case COUNTERCLOCKWISE:
-                if(iActualPlayer == 0) return players[iLastPlayer];
-                else return players[iActualPlayer - 1];
+            state.playersHandsSizes[i] = 7;
         }
-        return null;
+        for (int i = state.players.size(); i <= numberOfAi; ++i)
+        {
+            state.players.add(new game.myAssets.AI.AIPlayer(state));
+            state.playersHandsSizes[i] = 7;
+        }
+        state.lastPlayerIndex = state.players.size() - 1;
     }
+
     public void  prepareGame()
     {
-        if(players == null)
-        {
-            initializePlayers();
-        }
         state.table.clear();
         prepareDeck();
         Collections.shuffle(state.deck);
-        for(Player player : players)
+        for(Player player : state.players)
         {
             player.getHand().clear();
             for(int i = 0; i < 7; ++i)
@@ -125,12 +74,12 @@ public class EngineGameSpV2
             state.deck.add(state.table.pop());
             state.table.push(state.deck.remove(0));
         }
-        state.playerHandSize = 7;
         controllerGame.updateTopCard();
         controllerGame.updateColorIcon(state.table.peek().getColor());
         int[] points = new int[4];
         controllerGame.refreshScoreboard(points);
     }
+
     public void prepareDeck()
     {
         state.deck.clear();
@@ -147,7 +96,7 @@ public class EngineGameSpV2
                 state.deck.add(first);
                 state.deck.add(second);
                 state.cardSet.add(first);
-                //setOfCards.add(second);
+                state.cardSet.add(second);
             }
             //deck.add(new StopCard(color));
             //deck.add(new StopCard(color));
@@ -164,6 +113,7 @@ public class EngineGameSpV2
         }
          */
     }
+
     public void clearTable()
     {
         ACard topCard = state.table.pop();
@@ -178,13 +128,7 @@ public class EngineGameSpV2
         state.table.clear();
         state.table.push(topCard);
     }
-    public void switchDirection()
-    {
-        if(direction == EngineGame.Direction.CLOCKWISE)
-            direction = EngineGame.Direction.COUNTERCLOCKWISE;
-        else
-            direction = EngineGame.Direction.CLOCKWISE;
-    }
+
     public boolean isCardMatch(ACard card)
     {
         if(card instanceof ISpecialCard)
@@ -218,12 +162,13 @@ public class EngineGameSpV2
         }
         return false;
     }
+
     public void cardOnTable(int id)
     {
         ACard card = actualPlayer().getHand().elementAt(id);
         if(isCardMatch(card))
         {
-            state.failedCard = null;
+            //state.failedCard = null;
             state.cardSet.remove(card);
             state.table.add(card);
             actualPlayer().getHand().remove(id);
@@ -246,7 +191,7 @@ public class EngineGameSpV2
      */
     public void takeOne()
     {
-        state.failedCard = state.table.peek();
+        //state.failedCard.set(state.actualPlayerIndex,state.table.peek());
         ACard firstCard;
         if(state.deck.isEmpty())
             clearTable();
@@ -357,11 +302,11 @@ public class EngineGameSpV2
         }
         else
         {
-            --numberOfTakenCards;
+            --state.numberOfTakenCards;
             actualPlayer().getHand().add(firstCard);
-            while(numberOfTakenCards > 0)
+            while(state.numberOfTakenCards > 0)
             {
-                --numberOfTakenCards;
+                --state.numberOfTakenCards;
                 if(state.deck.isEmpty())
                     clearTable();
                 actualPlayer().getHand().add(state.deck.remove(0));
@@ -369,6 +314,7 @@ public class EngineGameSpV2
         }
         nextTurn();
     }
+
     /**
      * Metoda przesowa wskaznik aktualnego gracza na nastepna pozycje uwzgledniajac kierunek rozgrywki
      * Zwraca true gdy jeden z graczy wygra
@@ -394,27 +340,27 @@ public class EngineGameSpV2
                     return;
                 }
             }
-            if(!(actualPlayer() instanceof game.myAssets.AI.AIPlayer))
-                state.playerHandSize = actualPlayer().hand.size();
+            state.playersHandsSizes[state.actualPlayerIndex] = actualPlayer().getHand().size();
+            controllerGame.updateHandSizes(state.actualPlayerIndex, state.playersHandsSizes[state.actualPlayerIndex]);
             do
             {
                 actualPlayer().unfreeze();
-                if(direction == EngineGame.Direction.CLOCKWISE)
+                if(state.direction == GameStateV2.Direction.CLOCKWISE)
                 {
-                    if(iActualPlayer == iLastPlayer)
-                        iActualPlayer = 0;
+                    if(state.actualPlayerIndex == state.lastPlayerIndex)
+                        state.actualPlayerIndex = 0;
                     else
-                        iActualPlayer++;
+                        state.actualPlayerIndex++;
                 }
                 else
                 {
-                    if(iActualPlayer == 0)
-                        iActualPlayer = iLastPlayer;
+                    if(state.actualPlayerIndex == 0)
+                        state.actualPlayerIndex = state.lastPlayerIndex;
                     else
-                        iActualPlayer--;
+                        state.actualPlayerIndex--;
                 }
             }while (actualPlayer().isFrozen());
-            if(numberOfTakenCards > 0)
+            if(this.state.numberOfTakenCards > 0)
             {
                 takeCards();
                 continue;
@@ -425,10 +371,15 @@ public class EngineGameSpV2
         }while (actualPlayer() instanceof AIPlayer);
         controllerGame.enableAll();
     }
+
+    /**
+     * Metoda konczonca gre
+     * @param winner
+     */
     public void endMatch(Player winner)
     {
         int points = 0;
-        for (Player player : players)
+        for (Player player : state.players)
         {
             if(player == winner)
                 continue;
@@ -439,8 +390,10 @@ public class EngineGameSpV2
         }
         winner.addScore(points);
     }
+
     public void endGame()
     {
+        System.out.println("Player: " + actualPlayer() + " wins!");
        //ScoreManager scoreManager = new ScoreManager("scoreboard.txt");
        //scoreManager.saveScore(players);
     }
@@ -480,22 +433,16 @@ public class EngineGameSpV2
         }
         return fileName += ".png";
     }
+
     public void playAi()
     {
-        if(((AIPlayer)actualPlayer()).matchMyCards())
-        {
-            //ACard card = ((AIPlayer)actualPlayer()).playCard();
-            ((AIPlayer)players[1]).createMCTS();
-            ACard card = ((AIPlayer)actualPlayer()).myTreeMonteCarlo.search();
-            actualPlayer().getHand().remove(card);
-            //if(card instanceof ISpecialCard)
-            //((ISpecialCard) card).action(this);
-            state.table.remove(card);
-            state.table.add(card);
-        }
-        else
-            takeOneAi();
+        ((game.myAssets.AI.AIPlayer)actualPlayer()).createMCTS();
+        ACard card = ((game.myAssets.AI.AIPlayer)actualPlayer()).myTreeMonteCarlo.search();
+        actualPlayer().getHand().remove(card);
+        state.table.add(card);
+        state.playersHandsSizes[state.actualPlayerIndex]--;
     }
+
     public ACard.Color chColorAction()
     {
         if(actualPlayer() instanceof AIPlayer)

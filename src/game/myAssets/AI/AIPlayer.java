@@ -1,13 +1,12 @@
 package game.myAssets.AI;
 
-import game.myAssets.GameState;
+import game.myAssets.GameStateV2;
 import game.myAssets.Player;
 import game.myAssets.cards.ACard;
 import game.myAssets.cards.ISpecialCard;
 import game.myAssets.cards.RegularCard;
 import javafx.util.Pair;
 
-import java.util.Stack;
 import java.util.Vector;
 
 public class AIPlayer extends Player
@@ -25,11 +24,11 @@ public class AIPlayer extends Player
     ACard opponentFailedCard = null;
 
     Vector<ACard>matchingCards = new Vector<>();
-    GameState state;
+    GameStateV2 state;
 
     public MyTreeMonteCarlo myTreeMonteCarlo;
 
-    public AIPlayer(GameState state)
+    public AIPlayer(GameStateV2 state)
     {
         this.state = state;
     }
@@ -122,55 +121,12 @@ public class AIPlayer extends Player
 
     public ACard playCard()
     {
-        if(matchingCards.isEmpty())
-            return null;
-        scanHand();
-        int bestIndex = 0;
-        double lastOptimal = 0;
-        int i = 0;
-        for(ACard card : matchingCards)
-        {
-            double aggro = 0.0;
-            if(card instanceof ISpecialCard)
-            {
-                aggro = nextPlayerHandSize < 10 ? 10.0 - nextPlayerHandSize / 10.0 : 0;
-            }
-            else if((opponentFailedCard != null) &&
-                    card.getColor() == opponentFailedCard.getColor())
-            {
-                aggro = 1.0;
-            }
-            int colorQuantity = 0;
-            switch (card.getColor())
-            {
-                case RED:
-                    colorQuantity = myRedCards;
-                    break;
-                case BLUE:
-                    colorQuantity = myBlueCards;
-                    break;
-                case GREEN:
-                    colorQuantity = myGreenCards;
-                    break;
-                case YELLOW:
-                    colorQuantity = myYellowCards;
-                    break;
-            }
-            double activation = card.getPoints() + colorQuantity + aggro;
-            if(activation > lastOptimal)
-            {
-                lastOptimal = activation;
-                bestIndex = i;
-            }
-            ++i;
-        }
-        ACard pickedCard = matchingCards.remove(bestIndex);
-        hand.remove(pickedCard);
-        return pickedCard;
+        return null;
     }
 
     public void createMCTS()
     {
-        myTreeMonteCarlo = new MyTreeMonteCarlo(state, true, hand);
+        GameStateV2 aiPerspectiveState = this.state.deepClone();
+       myTreeMonteCarlo = new MyTreeMonteCarlo(state, hand);
     }
 }

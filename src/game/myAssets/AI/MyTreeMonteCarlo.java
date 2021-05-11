@@ -1,80 +1,60 @@
 package game.myAssets.AI;
 
-import game.myAssets.GameState;
+import game.myAssets.GameStateV2;
 import game.myAssets.cards.ACard;
 
-import java.util.*;
+import java.util.Random;
+import java.util.Vector;
 
 public class MyTreeMonteCarlo
 {
     private final int ITERATIONS = 100000;
 
     private Random randomGenerator = new Random();
-    MyTreeNode head;
-    ArrayList<Integer> moves;
+    MyTreeNodeV2 head;
 
     /**
      * Konstruktor tworzy obiekt obslugujacy wyszukiwanie monte carlo
-     * @param state
-     * @param isMaxPlayer
-     * @param myHand
+     * @param state GameState - Stan gry
+     * @param myHand Vector<ACard> reka z kartami
      */
-    public MyTreeMonteCarlo(GameState state, boolean isMaxPlayer, Vector<ACard> myHand)
+    public MyTreeMonteCarlo(GameStateV2 state, Vector<ACard> myHand)
     {
-        GameState deepClone = new GameState(state);
-        for (ACard card: myHand)
-        {
-            deepClone.cardSet.remove(card);
-        }
-        head = new MyTreeNode(deepClone, isMaxPlayer, myHand);
+        head = new MyTreeNodeV2(state,myHand);
     }
-
-    public MyTreeNode getHead()
-    {
-        return head;
-    }
-/*
-    public void setHead(MyTreeNode head)
-    {
-        this.head = head;
-    }
-*/
 
     /**
-     *
-     * @return
+     *  Zwraca znaleziona karte do rzucenia
+     * @return ACard - znaleziona karta lub
+     * @return null - w przypadku braku dopasowania
      */
     public ACard search()
     {
-        if(head.getChildren().size() == 0)
+        /*
+        if(head.getPossibleMoves().size() == 0)
+            return null;
+        if(head.children.size() == 0)
             head.createChildren();
         for(int i = 0; i < this.ITERATIONS; ++i)
         {
-            MyTreeNode bestChild = selection(head); //Selection
-
-            if(bestChild.getChildren().size() == 0) //expantion
+            MyTreeNodeV2 bestChild = selection(head); //Selection
+            if(bestChild.children.size() == 0) //expantion
                 bestChild.createChildren();
-            MyTreeNode nodeToExploration = bestChild;
-            //-----
-            nodeToExploration = cloneAndRandomize(nodeToExploration);
-            //-----
-            if(bestChild.getChildren().size() > 0)
-            {
-                int randomIndex = randomGenerator.nextInt(bestChild.getChildren().size());
-                nodeToExploration = bestChild.getChildren().get(randomIndex);
-            }
+            int randomIndex = randomGenerator.nextInt(bestChild.children.size());
+            MyTreeNodeV2 nodeToExploration = bestChild.children.get(randomIndex);
+            nodeToExploration = clone(nodeToExploration);
+            nodeToExploration.determine(); // DETERMINIZACJA
             int outcome = simulation(nodeToExploration); //rollout
             backpropagation(bestChild, outcome); //backpropagation
         }
         System.out.println("Liczba Dzieci: " + head.children.size());
         int i = 0;
-        for (MyTreeNode child:
-                head.children)
+        for (MyTreeNodeV2 child: head.children)
         {
             System.out.println("Dziecko " + i++ + "  " + child.visitCount + "  " + child.winCount);
         }
-        MyTreeNode winnerNode = selection(head);
-        return winnerNode.getTopCard();
+        MyTreeNodeV2 winnerNode = selection(head);
+        return winnerNode.state.table.peek();*/
     }
 
     /**
@@ -82,18 +62,18 @@ public class MyTreeMonteCarlo
      * @param node
      * @return
      */
-    public MyTreeNode selection(MyTreeNode node)
+    public MyTreeNodeV2 selection(MyTreeNodeV2 node)
     {
-        Vector<MyTreeNode> children = node.getChildren();
-        MyTreeNode bestMove = children.get(0);
+        Vector<MyTreeNodeV2> children = node.children;
+        MyTreeNodeV2 bestMove = children.get(0);
         double bestUTC = Integer.MIN_VALUE;
         if(children.size() > 0)
         {
-            for (MyTreeNode child: children)
+            for (MyTreeNodeV2 child: children)
             {
-                int parentVisitCount = node.getVisitCount();
-                int childVisitCount = child.getVisitCount();
-                int win = child.getWinCount();
+                int parentVisitCount = node.visitCount;
+                int childVisitCount = child.visitCount;
+                int win = child.winCount;
                 double calcedUTC = calcUCT(win, parentVisitCount, childVisitCount);
                 if(calcedUTC > bestUTC)
                 {
@@ -128,22 +108,22 @@ public class MyTreeMonteCarlo
      * @param node
      * @return
      */
-    public int simulation(MyTreeNode node)
+    public int simulation(MyTreeNodeV2 node)
     {
-        MyTreeNode tmpNode = node;
-        while(tmpNode.getMyHand().size() != 0 && tmpNode.getOpponentHandSize() != 0 && tmpNode.getDeck().size() != 0)
+        MyTreeNodeV2 tmpNode = node;
+        while(tmpNode.isTerminal == false)
         {
             tmpNode = randomPlay(tmpNode);
         }
-        if(tmpNode.getMyHand().size() == 0)
+        if(tmpNode.playersHands.get(head.state.actualPlayerIndex).size() == 0)
         {
             return 1;
-        }else if(tmpNode.getOpponentHandSize() == 0)
-        {
-            return -1;
-        }else
+        }else if(tmpNode.state.cardSet.size() == 0)
         {
             return 0;
+        }else
+        {
+            return -1;
         }
     }
 
@@ -152,57 +132,76 @@ public class MyTreeMonteCarlo
      * @param node
      * @return
      */
-    ///*
-    public MyTreeNode randomPlay(MyTreeNode node)
+    public MyTreeNodeV2 randomPlay(MyTreeNodeV2 node)
     {
-        node.createChildren();
-        int bounds = node.getChildren().size();
-        MyTreeNode radomChoice = node.getChildren().get(randomGenerator.nextInt(bounds));
-        return radomChoice;
-    }
-//*/
-    /*
-    public MyTreeNode randomPlay(MyTreeNode node)
-    {
+        double lowerbound = -0.5;
         node.createChildren();
         int bestIndex = 0;
         double evaluation = Integer.MIN_VALUE;
-        Vector<MyTreeNode> children = node.getChildren();
-        for(int i = 0; i > children.size(); ++i)
+        Vector<MyTreeNodeV2> children = node.children;
+        if(children.size() > 1)
         {
-            double result = evaluate(children.get(i));
-            if(result > evaluation)
+            for (int i = 0; i < children.size(); ++i)
             {
-                evaluation = result;
-                bestIndex = i;
+                double result = evaluate(children.get(i));
+                result += randomGenerator.nextDouble() + lowerbound;
+                if (result > evaluation)
+                {
+                    evaluation = result;
+                    bestIndex = i;
+                }
             }
         }
-        //int bounds = node.getChildren().size();
-        //MyTreeNode radomChoice = node.getChildren().get(randomGenerator.nextInt(bounds));
-        MyTreeNode radomChoice = children.get(bestIndex);
-        radomChoice.getState().failedCard = null;
-        return radomChoice;
+        MyTreeNodeV2 randomChoice = children.get(bestIndex);
+        //randomChoice.state.failedCard = null;
+        return randomChoice;
     }
-*/
-    /*
-    public double evaluate(MyTreeNode myTreeNode)
+    /**
+     * @return metoda zwraca wartosc wyboru
+     * */
+    public double evaluate(MyTreeNodeV2 myTreeNode)
     {
-        GameState state = myTreeNode.getState();
-        if(state)
+        double cardValue = 0.0;
+        GameStateV2 state = myTreeNode.state;
+        switch (state.table.peek().getColor())
+        {
+            case RED:
+                cardValue += myTreeNode.myRedCards / 10;
+                break;
+            case BLUE:
+                cardValue += myTreeNode.myBlueCards / 10;
+                break;
+            case GREEN:
+                cardValue += myTreeNode.myGreenCards / 10;
+                break;
+            case YELLOW:
+                cardValue += myTreeNode.myYellowCards / 10;
+            default:
+                break;
+        }
+        /*
+        if(state.failedCard != null)
+        if(state.failedCard.get(state.actualPlayerIndex).getColor() == state.table.peek().getColor())
+        {
+            cardValue += 0.5;
+        }*
+
+         */
+        return cardValue;
     }
-*/
+//*/
     /**
      *
      * @param nodeToExplore
      * @param simulationResult
      */
-    public void backpropagation(MyTreeNode nodeToExplore, int simulationResult)
+    public void backpropagation(MyTreeNodeV2 nodeToExplore, int simulationResult)
     {
         while(nodeToExplore != null)
         {
             nodeToExplore.visitCount++;
             nodeToExplore.winCount += simulationResult;
-            nodeToExplore = nodeToExplore.getParent();
+            nodeToExplore = nodeToExplore.parent;
         }
     }
 
@@ -211,10 +210,9 @@ public class MyTreeMonteCarlo
      * @param node
      * @return
      */
-    private MyTreeNode cloneAndRandomize(MyTreeNode node)
+    private MyTreeNodeV2 clone(MyTreeNodeV2 node)
     {
-        MyTreeNode clonedNode = new MyTreeNode(node.getTopCard(), true, node );
-        clonedNode.determine();
+        MyTreeNodeV2 clonedNode = new MyTreeNodeV2(node);
         return clonedNode;
     }
 }
