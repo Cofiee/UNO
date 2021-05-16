@@ -124,9 +124,10 @@ public class AIPlayer extends Player
         return null;
     }
 
-    public void createMCTS()
+    public ACard MCTS()
     {
         GameStateV2 aiPerspectiveState = this.state.deepClone();
-       myTreeMonteCarlo = new MyTreeMonteCarlo(state, hand);
+        myTreeMonteCarlo = new MyTreeMonteCarlo(state, hand);
+        return myTreeMonteCarlo.search();
     }
 }

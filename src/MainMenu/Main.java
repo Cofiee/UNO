@@ -20,7 +20,7 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("../MainMenu/sample.fxml"));
         primaryStage.initStyle(StageStyle.DECORATED);
         primaryStage.setTitle("UNO");
-        scene = new Scene(root, 1200, 600);
+        scene = new Scene(root, 1200, 1000);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

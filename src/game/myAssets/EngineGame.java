@@ -132,12 +132,12 @@ public class EngineGame
             {
                 deck.add(new RegularCard(i, color));
             }
-            //deck.add(new StopCard(color));
-            //deck.add(new StopCard(color));
-            //deck.add(new SwitchCard(color));
-            //deck.add(new SwitchCard(color));
-            //deck.add(new TakeTwoCard(color));
-            //deck.add(new TakeTwoCard(color));
+            deck.add(new StopCard(color));
+            deck.add(new StopCard(color));
+            deck.add(new SwitchCard(color));
+            deck.add(new SwitchCard(color));
+            deck.add(new TakeTwoCard(color));
+            deck.add(new TakeTwoCard(color));
         }
         /*
         for(int i = 0; i < 4; ++i)

@@ -2,6 +2,7 @@ package game.myAssets.AI;
 
 import game.myAssets.GameStateV2;
 import game.myAssets.cards.ACard;
+import game.myAssets.cards.ISpecialCard;
 
 import java.util.Random;
 import java.util.Vector;
@@ -20,7 +21,7 @@ public class MyTreeMonteCarlo
      */
     public MyTreeMonteCarlo(GameStateV2 state, Vector<ACard> myHand)
     {
-        head = new MyTreeNodeV2(state,myHand);
+        this.head = new MyTreeNodeV2(state, (Vector<ACard>) myHand.clone());
     }
 
     /**
@@ -30,31 +31,25 @@ public class MyTreeMonteCarlo
      */
     public ACard search()
     {
-        /*
-        if(head.getPossibleMoves().size() == 0)
-            return null;
-        if(head.children.size() == 0)
-            head.createChildren();
-        for(int i = 0; i < this.ITERATIONS; ++i)
+        head.createChildren();
+        for(int i = 0; i < ITERATIONS; ++i)
         {
-            MyTreeNodeV2 bestChild = selection(head); //Selection
-            if(bestChild.children.size() == 0) //expantion
-                bestChild.createChildren();
-            int randomIndex = randomGenerator.nextInt(bestChild.children.size());
-            MyTreeNodeV2 nodeToExploration = bestChild.children.get(randomIndex);
-            nodeToExploration = clone(nodeToExploration);
-            nodeToExploration.determine(); // DETERMINIZACJA
-            int outcome = simulation(nodeToExploration); //rollout
-            backpropagation(bestChild, outcome); //backpropagation
+            MyTreeNodeV2 nodeToExploration = selection(head);
+            //if(nodeToExploration.isTerminal)
+                //return nodeToExploration.state.table.peek();
+            nodeToExploration = nodeToExploration.clone();
+            nodeToExploration.determine();
+            int result = simulation(nodeToExploration);
+            backpropagation(nodeToExploration, result);
         }
-        System.out.println("Liczba Dzieci: " + head.children.size());
-        int i = 0;
-        for (MyTreeNodeV2 child: head.children)
+        System.out.println("Liczbna dzieci: " + head.children.size());
+        for (MyTreeNodeV2 child:
+                head.children)
         {
-            System.out.println("Dziecko " + i++ + "  " + child.visitCount + "  " + child.winCount);
+            System.out.println("Liczba odwiedzeni: " + child.visitCount + "\tLiczba zwyciestw: " + child.winCount);
         }
-        MyTreeNodeV2 winnerNode = selection(head);
-        return winnerNode.state.table.peek();*/
+        MyTreeNodeV2 bestNode = selection(head);
+        return bestNode.state.table.peek();
     }
 
     /**
@@ -98,7 +93,7 @@ public class MyTreeMonteCarlo
         {
             return Integer.MAX_VALUE;
         }
-        double c = 2.0; //state parameter
+        double c = Math.sqrt(2.0); //state parameter
         double rootBase = Math.log(bigN) / ni;
         return winCount / ni + c * Math.sqrt(rootBase);
     }
@@ -153,9 +148,9 @@ public class MyTreeMonteCarlo
             }
         }
         MyTreeNodeV2 randomChoice = children.get(bestIndex);
-        //randomChoice.state.failedCard = null;
         return randomChoice;
     }
+
     /**
      * @return metoda zwraca wartosc wyboru
      * */
@@ -163,7 +158,8 @@ public class MyTreeMonteCarlo
     {
         double cardValue = 0.0;
         GameStateV2 state = myTreeNode.state;
-        switch (state.table.peek().getColor())
+        ACard card = state.table.peek();
+        switch (card.getColor())
         {
             case RED:
                 cardValue += myTreeNode.myRedCards / 10;
@@ -179,14 +175,10 @@ public class MyTreeMonteCarlo
             default:
                 break;
         }
-        /*
-        if(state.failedCard != null)
-        if(state.failedCard.get(state.actualPlayerIndex).getColor() == state.table.peek().getColor())
-        {
+        if(card instanceof ISpecialCard)
             cardValue += 0.5;
-        }*
-
-         */
+        if(myTreeNode.failedCard[state.actualPlayerIndex] != null && card.getColor() == myTreeNode.failedCard[state.actualPlayerIndex].getColor())
+            cardValue += 1.0;
         return cardValue;
     }
 //*/
@@ -203,16 +195,5 @@ public class MyTreeMonteCarlo
             nodeToExplore.winCount += simulationResult;
             nodeToExplore = nodeToExplore.parent;
         }
-    }
-
-    /**
-     *
-     * @param node
-     * @return
-     */
-    private MyTreeNodeV2 clone(MyTreeNodeV2 node)
-    {
-        MyTreeNodeV2 clonedNode = new MyTreeNodeV2(node);
-        return clonedNode;
     }
 }

@@ -26,6 +26,25 @@ public class EngineGameSpV2
         this.controllerGame = controller;
     }
 
+    public GameStateV2 getState()
+    {
+        return state;
+    }
+
+    public Player getNextPLayer()
+    {
+        switch (state.direction)
+        {
+            case CLOCKWISE:
+                if(state.actualPlayerIndex == state.lastPlayerIndex) return state.players.get(0);
+                else return state.players.get(state.actualPlayerIndex + 1);
+            case COUNTERCLOCKWISE:
+                if(state.actualPlayerIndex == 0) return state.players.get(state.lastPlayerIndex);
+                else return state.players.get(state.actualPlayerIndex - 1);
+        }
+        return null;
+    }
+
     public int getIActualPlayer()
     {
         return state.actualPlayerIndex;
@@ -52,6 +71,7 @@ public class EngineGameSpV2
         for (int i = state.players.size(); i <= numberOfAi; ++i)
         {
             state.players.add(new game.myAssets.AI.AIPlayer(state));
+            //state.playersHandsSizes[i] = 1;
             state.playersHandsSizes[i] = 7;
         }
         state.lastPlayerIndex = state.players.size() - 1;
@@ -65,10 +85,20 @@ public class EngineGameSpV2
         for(Player player : state.players)
         {
             player.getHand().clear();
+            /*////////////////////////////
+            if(player instanceof game.myAssets.AI.AIPlayer)
+            {
+                player.getHand().add(new RegularCard(1, ACard.Color.RED));
+                continue;
+            }
+            */////////////////////////////////
             for(int i = 0; i < 7; ++i)
                 player.getHand().add(state.deck.remove(0));
         }
         state.table.add(state.deck.remove(0));
+        ///////////
+        //state.table.add(new RegularCard(2, ACard.Color.RED));
+        ////////////
         while (state.table.peek() instanceof ISpecialCard)
         {
             state.deck.add(state.table.pop());
@@ -98,20 +128,34 @@ public class EngineGameSpV2
                 state.cardSet.add(first);
                 state.cardSet.add(second);
             }
-            //deck.add(new StopCard(color));
-            //deck.add(new StopCard(color));
-            //deck.add(new SwitchCard(color));
-            //deck.add(new SwitchCard(color));
-            //deck.add(new TakeTwoCard(color));
-            //deck.add(new TakeTwoCard(color));
+            ACard first = new TakeTwoCard(color);
+            ACard second = new TakeTwoCard(color);
+            state.deck.add(first);
+            state.deck.add(second);
+            state.cardSet.add(first);
+            state.cardSet.add(second);
+            first = new StopCard(color);
+            second = new StopCard(color);
+            state.deck.add(first);
+            state.deck.add(second);
+            state.cardSet.add(first);
+            state.cardSet.add(second);
+            first = new SwitchCard(color);
+            second = new SwitchCard(color);
+            state.deck.add(first);
+            state.deck.add(second);
+            state.cardSet.add(first);
+            state.cardSet.add(second);
         }
-        /*
         for(int i = 0; i < 4; ++i)
         {
-            deck.add(new ChColorCard());
-            deck.add(new TakeFourCard());
+            ACard first = new ChColorCard();
+            state.deck.add(first);
+            state.cardSet.add(first);
+            first = new TakeFourCard();
+            state.deck.add(first);
+            state.cardSet.add(first);
         }
-         */
     }
 
     public void clearTable()
@@ -182,7 +226,7 @@ public class EngineGameSpV2
             return;
         }
         if(card instanceof ISpecialCard)
-            ;//((ISpecialCard) card).action(this);
+            ((ISpecialCard) card).action(this);
         nextTurn();
     }
 
@@ -202,7 +246,7 @@ public class EngineGameSpV2
             {
                 state.table.add(firstCard);
                 if(firstCard instanceof ISpecialCard)
-                    ;//((ISpecialCard) firstCard).action(this);
+                    ((ISpecialCard) firstCard).action(this);
             }
             else
             {
@@ -230,7 +274,7 @@ public class EngineGameSpV2
         {
             state.table.add(firstCard);
             if(firstCard instanceof ISpecialCard)
-                ;//((ISpecialCard) firstCard).action(this);
+                ((ISpecialCard) firstCard).action(this);
         }
         else
         {
@@ -252,14 +296,14 @@ public class EngineGameSpV2
                 if(actualPlayer() instanceof AIPlayer)
                 {
                     state.table.add(card);
-                    //((ISpecialCard)card).action(this);
+                    ((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
                 else if(controllerGame.matchCardDialog(card))
                 {
                     state.table.add(card);
-                    //((ISpecialCard)card).action(this);
+                    ((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
@@ -274,14 +318,14 @@ public class EngineGameSpV2
                 if(actualPlayer() instanceof AIPlayer)
                 {
                     state.table.add(card);
-                    //((ISpecialCard)card).action(this);
+                    ((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
                 else if(controllerGame.matchCardDialog(card))
                 {
                     state.table.add(card);
-                    //((ISpecialCard)card).action(this);
+                    ((ISpecialCard)card).action(this);
                     nextTurn();
                     return;
                 }
@@ -296,7 +340,7 @@ public class EngineGameSpV2
                 firstCard instanceof TakeFourCard && state.table.peek() instanceof TakeFourCard)
         {
             state.table.add(firstCard);
-            //((ISpecialCard) firstCard).action(this);
+            ((ISpecialCard) firstCard).action(this);
             nextTurn();
             return;
         }
@@ -312,7 +356,7 @@ public class EngineGameSpV2
                 actualPlayer().getHand().add(state.deck.remove(0));
             }
         }
-        nextTurn();
+        //nextTurn();
     }
 
     /**
@@ -363,6 +407,7 @@ public class EngineGameSpV2
             if(this.state.numberOfTakenCards > 0)
             {
                 takeCards();
+                controllerGame.updateHandSizes(state.actualPlayerIndex, state.playersHandsSizes[state.actualPlayerIndex]);
                 continue;
             }
             controllerGame.nextPlayerDialog();
@@ -436,11 +481,18 @@ public class EngineGameSpV2
 
     public void playAi()
     {
-        ((game.myAssets.AI.AIPlayer)actualPlayer()).createMCTS();
-        ACard card = ((game.myAssets.AI.AIPlayer)actualPlayer()).myTreeMonteCarlo.search();
-        actualPlayer().getHand().remove(card);
-        state.table.add(card);
-        state.playersHandsSizes[state.actualPlayerIndex]--;
+        if(!((game.myAssets.AI.AIPlayer)actualPlayer()).matchMyCards())
+        {
+            takeOneAi();
+        }
+        else
+        {
+            ACard card = ((game.myAssets.AI.AIPlayer)actualPlayer()).MCTS();
+            actualPlayer().getHand().remove(card);
+            state.table.add(card);
+            if(card instanceof ISpecialCard)
+                ((ISpecialCard)card).action(this);
+        }
     }
 
     public ACard.Color chColorAction()

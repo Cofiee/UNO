@@ -1,6 +1,8 @@
 package game.myAssets.cards;
 
+import game.myAssets.AI.MyTreeNodeV2;
 import game.myAssets.EngineGame;
+import game.myAssets.EngineGameSpV2;
 
 public class StopCard extends ACard
                         implements ISpecialCard
@@ -20,4 +22,10 @@ public class StopCard extends ACard
     {
         engineGame.getNextPLayer().freeze();
     }
+
+    @Override
+    public void action(EngineGameSpV2 engineGame){ engineGame.getNextPLayer().freeze(); }
+
+    @Override
+    public void action(MyTreeNodeV2 node){}
 }

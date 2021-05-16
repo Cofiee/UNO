@@ -9,7 +9,7 @@ public class GameStateV2
 {
     Vector<Player> players;
     public int lastPlayerIndex;
-
+    public boolean isFrozen;
     public Stack<ACard> table;
 
     public Vector<ACard> cardSet;
@@ -60,16 +60,6 @@ public class GameStateV2
         return tmpState;
     }
 
-    public void adjustPerspective(int myPlayerIndex)
-    {
-        actualPlayerIndex = myPlayerIndex;
-        int[] tmpArr = new int[lastPlayerIndex + 1];
-        for(int i = 0; i <= lastPlayerIndex; ++i)
-        {
-            tmpArr[i] = playersHandsSizes[actualPlayerIndex];
-        }
-        playersHandsSizes = tmpArr;
-    }
     /**
      * Metoda przesowa index o jeden
      */
@@ -89,6 +79,24 @@ public class GameStateV2
             else
                 actualPlayerIndex--;
         }
+        if(isFrozen)
+        {
+            isFrozen = false;
+            if(direction == Direction.CLOCKWISE)
+            {
+                if(actualPlayerIndex == lastPlayerIndex)
+                    actualPlayerIndex = 0;
+                else
+                    actualPlayerIndex++;
+            }
+            else
+            {
+                if (actualPlayerIndex == 0)
+                    actualPlayerIndex = lastPlayerIndex;
+                else
+                    actualPlayerIndex--;
+            }
+        }
     }
 
     public void switchDirection()
@@ -97,5 +105,10 @@ public class GameStateV2
             this.direction = GameStateV2.Direction.COUNTERCLOCKWISE;
         else
             this.direction = GameStateV2.Direction.CLOCKWISE;
+    }
+
+    public void setNumberOfTakenCards(int numberOfTakenCards)
+    {
+        this.numberOfTakenCards = numberOfTakenCards;
     }
 }
