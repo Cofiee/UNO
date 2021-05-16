@@ -5,13 +5,13 @@
 package game;
 
 import MainMenu.Main;
+import game.myAssets.AI.AIPlayer;
 import game.myAssets.EngineGame;
 import game.myAssets.cards.ACard;
+
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -22,14 +22,11 @@ import javafx.scene.image.Image;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Vector;
+import java.util.*;
 
 public class ControllerGame
 {
-    EngineGame engineGame;
+    final EngineGame engineGame;
 
     @FXML
     Circle top_color;
@@ -45,6 +42,8 @@ public class ControllerGame
     VBox player_position_3_vbox;
     @FXML
     Button button_take_card;
+    @FXML
+    VBox score_board;
 
     public ControllerGame()
     {
@@ -53,15 +52,39 @@ public class ControllerGame
     @FXML
     void initialize()
     {
+        int playersNumber = numberOfPlayersDialog(engineGame.MAX_PLAYERS_NUMBER);
+        int AiNumber = numberOfAiPlayersDialog(engineGame.MAX_PLAYERS_NUMBER, playersNumber);
+        engineGame.initializePlayers(playersNumber, AiNumber);
         engineGame.prepareGame();
-        try
+        updatePlayerHand();
+    }
+    /*
+    * Wyswietla dialog z zapytaniem o liczbe graczy
+    * Zwraca wybrana liczbe graczy
+    * */
+    public int numberOfPlayersDialog(int maxPlayerNumber)
+    {
+        List<Integer> choices = new ArrayList<>();
+        for(int i = 1; i <= maxPlayerNumber; ++i)
         {
-            updatePlayerHand();
+            choices.add(i);
         }
-        catch (Exception e)
+        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(2, choices);
+        Optional<Integer> result = dialog.showAndWait();
+        return result.get();
+    }
+    public int numberOfAiPlayersDialog(int maxPlayerNumber,int humansNumber)
+    {
+        List<Integer> choices = new ArrayList<>();
+        int maxAi = 4 - humansNumber;
+        int minAi = humansNumber == 1 ? 1 : 0;
+        for (int i = minAi; i <= maxAi; ++i)
         {
-
+            choices.add(i);
         }
+        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(minAi, choices);
+        Optional<Integer> result = dialog.showAndWait();
+        return result.get();
     }
     /*
     * Metoda wyswietlajaca powiadomienie o potrzebie zmiany koloru
@@ -122,7 +145,7 @@ public class ControllerGame
             FileInputStream inputStream = new FileInputStream(path);
             ImageView imageView = new ImageView(new Image(inputStream));
             imageView.setFitHeight(300.0);
-            imageView.setFitWidth(170.0);
+            imageView.setFitWidth(190.0);
             card_stack.getChildren().add(imageView);
         }
         catch (java.io.FileNotFoundException e)
@@ -153,7 +176,7 @@ public class ControllerGame
                 FileInputStream inputStream = new FileInputStream(path);
                 ImageView imageView = new ImageView(new Image(inputStream));
                 imageView.setFitHeight(300.0);
-                imageView.setFitWidth(170.0);
+                imageView.setFitWidth(190.0);
                 imageView.setId(Integer.toString(id));
                 imageView.setOnMouseClicked(new EventHandler<MouseEvent>()
                 {
@@ -161,16 +184,28 @@ public class ControllerGame
                     public void handle(MouseEvent event)
                     {
                         engineGame.cardOnTable(Integer.parseInt(imageView.getId()));
-                        try
-                        {
-                            updateTopCard();
-                        } catch (Exception e)
-                        {
-                            System.out.println(e.getMessage() + "\n" + e.getCause());
-                        }
-                        updatePlayerHand();
-                        updateColorIcon(engineGame.getTopColor());
                         updateTopCard();
+                        updatePlayerHand();
+                        updateColorIcon(engineGame.getTopCard().getColor());
+                        updateTopCard();
+                    }
+                });
+                imageView.setOnMouseEntered(new EventHandler<MouseEvent>()
+                {
+                    @Override
+                    public void handle(MouseEvent event)
+                    {
+                        imageView.setFitWidth(200);
+                        imageView.setFitHeight(310);
+                    }
+                });
+                imageView.setOnMouseExited(new EventHandler<MouseEvent>()
+                {
+                    @Override
+                    public void handle(MouseEvent event)
+                    {
+                        imageView.setFitWidth(190);
+                        imageView.setFitHeight(300);
                     }
                 });
                 imageViews.add(imageView);
@@ -192,14 +227,17 @@ public class ControllerGame
         player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
         player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
     }
-    /**/
+    /*
+    * Inicjuje dobranie jednej karty w silniku
+    * */
     public void takeOneCard()
     {
         engineGame.takeOne();
-        this.nextTurn();
     }
-    /**/
-    public boolean takeOrFake(ACard card)
+    /*
+    *
+    * */
+    public boolean matchCardDialog(ACard card)
     {
         try
         {
@@ -216,39 +254,92 @@ public class ControllerGame
                 return true;
             else
                 return false;
-        }catch (Exception e)
-        {}
+        }catch (java.io.FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sprite not found exception");
+            alert.setHeaderText("java.io.FileNotFoundException");
+            alert.setContentText(e.getMessage());
+        }
         return false;
     }
-    public void nextTurn()
+    public void takeCardDialog(ACard card)
     {
-        if(engineGame.endTurn())
-        {
-            try
-            {
-                switchToMainMenu();
-            }catch (Exception e)
-            {
-
-            }
-            return;
-        }
-        player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
-        //player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
-        //player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
-        //player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer() + 1) + " turn.");
-        alert.showAndWait();
         try
         {
-           updatePlayerHand();
-        }catch (Exception e){}
-        engineGame.beginTurn();
+            String path = "src/game/myAssets/cards/sprites/" + engineGame.parseCard(card);
+            InputStream inputStream = new FileInputStream(path);
+            ImageView imageView = new ImageView(new Image(inputStream));
+            final String[] options = {"Throw it", "Take it"};
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setGraphic(imageView);
+            alert.setTitle("Card match!");
+            Optional<ButtonType> result = alert.showAndWait();
+        }catch (java.io.FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sprite not found exception");
+            alert.setHeaderText("java.io.FileNotFoundException");
+            alert.setContentText(e.getMessage());
+        }
+    }
+    public void disableAll()
+    {
+
+        player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
+        player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
+        player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
+        player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+        button_take_card.setDisable(true);
+    }
+    public void enableAll()
+    {
+        button_take_card.setDisable(false);
+        updatePlayerHand();
+        updateTopCard();
+        updateColorIcon(engineGame.getTopCard().getColor());
+    }
+    public void nextPlayerDialog()
+    {
+        if(engineGame.actualPlayer() instanceof AIPlayer)
+        {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("It is now Computer " + (engineGame.getIActualPlayer()) + " turn.");
+            alert.show();
+        }
+        else
+        {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("It is now player " + (engineGame.getIActualPlayer()) + " turn.");
+            alert.showAndWait();
+            button_take_card.setDisable(false);
+            updatePlayerHand();
+        }
+    }
+    public void refreshScoreboard(int[] points)
+    {
+        score_board.getChildren().removeAll(score_board.getChildren());
+        int i = 0;
+        for (int point:
+             points)
+        {
+            score_board.getChildren().add(new Label("Player " + i + ":  " + point));
+        }
     }
     @FXML
-    private void switchToMainMenu() throws IOException
+    public void switchToMainMenu()
     {
-        Main.setRoot("../MainMenu/sample.fxml");
+        try
+        {
+            Main.setRoot("../MainMenu/sample.fxml");
+        }catch(IOException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("IOException");
+            alert.setHeaderText("Could not find specified path: ../MainMenu/sample.fxml");
+            alert.setContentText("Check if path is proper");
+            alert.showAndWait();
+            System.exit(1);
+        }
     }
 }

@@ -1,6 +1,8 @@
 package game.myAssets.cards;
 
+import game.myAssets.AI.MyTreeNodeV2;
 import game.myAssets.EngineGame;
+import game.myAssets.EngineGameSpV2;
 
 public class StopCard extends ACard
                         implements ISpecialCard
@@ -12,11 +14,18 @@ public class StopCard extends ACard
             //Wyjatek
         }
         this.color = color;
+        this.points = 20;
     }
 
     @Override
     public void action(EngineGame engineGame)
     {
-        engineGame.nextPLayer().freeze();
+        engineGame.getNextPLayer().freeze();
     }
+
+    @Override
+    public void action(EngineGameSpV2 engineGame){ engineGame.getNextPLayer().freeze(); }
+
+    @Override
+    public void action(MyTreeNodeV2 node){}
 }

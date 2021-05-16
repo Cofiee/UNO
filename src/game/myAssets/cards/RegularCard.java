@@ -15,6 +15,7 @@ public class RegularCard extends ACard
             //WYJATEk
         }
         this.digit = digit;
+        this.points = digit;
         this.color = color;
     }
 
