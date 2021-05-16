@@ -1,7 +1,6 @@
 package game.myAssets.cards;
 
 import game.myAssets.AI.MyTreeNodeV2;
-import game.myAssets.EngineGame;
 import game.myAssets.EngineGameSpV2;
 import game.myAssets.GameStateV2;
 
@@ -12,14 +11,6 @@ public class TakeFourCard extends ACard
     {
         this.color = ACard.Color.BLACK;
         this.points = 50;
-    }
-    @Override
-    public void action(EngineGame engineGame)
-    {
-        ACard.Color color = engineGame.chColorAction();
-        this.color = color == Color.BLACK? Color.RED: color;
-        int numberOfTakenCards = engineGame.getNumberOfTakenCards();
-        engineGame.setNumberOfTakenCards(numberOfTakenCards + 4);
     }
 
     @Override

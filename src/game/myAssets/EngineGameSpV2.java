@@ -60,18 +60,18 @@ public class EngineGameSpV2
         return state.table.peek();
     }
 
-    public void initializePlayers(int numberOfAi)
+    public void initializePlayers(int numberOfPlayers, int numberOfAi)
     {
-        state.players.add(new Player());
-        state.playersHandsSizes = new int[state.players.size() + numberOfAi];
-        for(int i = 0; i < state.players.size(); ++i)
+
+        state.playersHandsSizes = new int[numberOfPlayers + numberOfAi];
+        for(int i = 0; i < numberOfPlayers; ++i)
         {
+            state.players.add(new Player());
             state.playersHandsSizes[i] = 7;
         }
-        for (int i = state.players.size(); i <= numberOfAi; ++i)
+        for (int i = numberOfPlayers; i <= numberOfAi; ++i)
         {
             state.players.add(new game.myAssets.AI.AIPlayer(state));
-            //state.playersHandsSizes[i] = 1;
             state.playersHandsSizes[i] = 7;
         }
         state.lastPlayerIndex = state.players.size() - 1;
@@ -85,20 +85,10 @@ public class EngineGameSpV2
         for(Player player : state.players)
         {
             player.getHand().clear();
-            /*////////////////////////////
-            if(player instanceof game.myAssets.AI.AIPlayer)
-            {
-                player.getHand().add(new RegularCard(1, ACard.Color.RED));
-                continue;
-            }
-            */////////////////////////////////
             for(int i = 0; i < 7; ++i)
                 player.getHand().add(state.deck.remove(0));
         }
         state.table.add(state.deck.remove(0));
-        ///////////
-        //state.table.add(new RegularCard(2, ACard.Color.RED));
-        ////////////
         while (state.table.peek() instanceof ISpecialCard)
         {
             state.deck.add(state.table.pop());

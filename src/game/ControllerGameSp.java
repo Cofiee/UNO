@@ -24,6 +24,12 @@ public class ControllerGameSp
 {
     final EngineGameSpV2 engineGameSp;
 
+    public enum Mode
+    {
+        SINGLEPLAYER,
+        MULTIPLAYER
+    }
+
     @FXML
     Circle top_color;
     @FXML
@@ -41,53 +47,34 @@ public class ControllerGameSp
     @FXML
     VBox score_board;
 
+    /**
+     * Konstruktor domyslny
+     * Tworzy silnik logiczny gry
+     */
     public ControllerGameSp()
     {
         this.engineGameSp = new EngineGameSpV2(this);
     }
+
     @FXML
-    void initialize()
+    private void initialize() {}
+
+    /**
+     * Metoda odpowiedzialna za rozpoczecie rozgrywki
+     * @param numberOfHumans liczba ludzkich graczy w grze
+     * @param numberOfAi liczba sztucznych inteligencji w grze
+     */
+    public void startGame(int numberOfHumans, int numberOfAi)
     {
-        //int playersNumber = numberOfPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER);
-        int AiNumber = numberOfAiPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER, 1);
-        engineGameSp.initializePlayers(AiNumber);
+        engineGameSp.initializePlayers(numberOfHumans,numberOfAi);
         engineGameSp.prepareGame();
         updatePlayerHand();
     }
 
     /**
-     * Wyswietla dialog z zapytaniem o liczbe graczy
-     * Zwraca wybrana liczbe graczy
-     * @param maxPlayerNumber - maksymalna liczba graczy
-     * @return
-     */
-    public int numberOfPlayersDialog(int maxPlayerNumber)
-    {
-        List<Integer> choices = new ArrayList<>();
-        for(int i = 1; i <= maxPlayerNumber; ++i)
-        {
-            choices.add(i);
-        }
-        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(2, choices);
-        Optional<Integer> result = dialog.showAndWait();
-        return result.get();
-    }
-    public int numberOfAiPlayersDialog(int maxPlayerNumber,int humansNumber)
-    {
-        List<Integer> choices = new ArrayList<>();
-        int maxAi = 4 - humansNumber;
-        int minAi = humansNumber == 1 ? 1 : 0;
-        for (int i = minAi; i <= maxAi; ++i)
-        {
-            choices.add(i);
-        }
-        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(minAi, choices);
-        Optional<Integer> result = dialog.showAndWait();
-        return result.get();
-    }
-    /*
      * Metoda wyswietlajaca powiadomienie o potrzebie zmiany koloru
-     * */
+     * @return ACard.Color zwraca wybrany kolor karty
+     */
     public ACard.Color chColorAlert()
     {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -108,9 +95,9 @@ public class ControllerGameSp
         else
             return ACard.Color.YELLOW;
     }
-    /*
+    /**
      * Metoda aktualizujaca ikone koloru gornej karty
-     * */
+     */
     public void updateColorIcon(ACard.Color myColor)
     {
         Color color;
@@ -133,9 +120,10 @@ public class ControllerGameSp
         }
         top_color.setFill(color);
     }
-    /*
+
+    /**
      * Metoda wyswietlajaca karty na szczycie stolu
-     * */
+     */
     public void updateTopCard()
     {
         String path = "src/game/myAssets/cards/sprites/"+engineGameSp.parseCard(engineGameSp.getTopCard());
@@ -155,10 +143,11 @@ public class ControllerGameSp
             alert.setContentText(e.getMessage());
         }
     }
-    /*
+
+    /**
      * Metoda odpowiadajaca za wyswietlanie kart graczy w polach graczy
      * Kazda karta ma zainicjalizowany event
-     * */
+     */
     public void updatePlayerHand()
     {
         player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
@@ -220,22 +209,22 @@ public class ControllerGameSp
         }
         player_position_0_hbox.getChildren().addAll(imageViews);
     }
+
     public void updateOponentsHands()
     {
         player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
         player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
         player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
     }
-    /*
+
+    /**
      * Inicjuje dobranie jednej karty w silniku
-     * */
+     */
     public void takeOneCard()
     {
         engineGameSp.takeOne();
     }
-    /*
-     *
-     * */
+
     public boolean matchCardDialog(ACard card)
     {
         try

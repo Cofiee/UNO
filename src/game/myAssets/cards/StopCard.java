@@ -1,7 +1,6 @@
 package game.myAssets.cards;
 
 import game.myAssets.AI.MyTreeNodeV2;
-import game.myAssets.EngineGame;
 import game.myAssets.EngineGameSpV2;
 
 public class StopCard extends ACard
@@ -15,12 +14,6 @@ public class StopCard extends ACard
         }
         this.color = color;
         this.points = 20;
-    }
-
-    @Override
-    public void action(EngineGame engineGame)
-    {
-        engineGame.getNextPLayer().freeze();
     }
 
     @Override
