@@ -25,7 +25,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     *  Zwraca znaleziona karte do rzucenia
+     * Zwraca znaleziona karte do rzucenia
      * @return ACard - znaleziona karta lub
      * @return null - w przypadku braku dopasowania
      */
@@ -53,7 +53,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     *
+     * Metoda dokonuje wyboru na podstawie wskaznika UCT z posrod wezlow dzieci podanego wezla
      * @param node
      * @return
      */
@@ -123,7 +123,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     *
+     * Metoda wykorzystuje ekspercka wiedze gry w celu wybierania losowych ruchow symulacji
      * @param node
      * @return
      */
@@ -152,6 +152,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
+     * Metoda dokonuje wyboru na podstawie zmiennej losowej i aktualnego stanu gry i reki aktualnego gracza
      * @return metoda zwraca wartosc wyboru
      * */
     public double evaluate(MyTreeNodeV2 myTreeNode)

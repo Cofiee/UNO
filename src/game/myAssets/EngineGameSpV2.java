@@ -60,6 +60,11 @@ public class EngineGameSpV2
         return state.table.peek();
     }
 
+    /**
+     * Metoda przygotowywująca graczy w grze na podstawie otrzymanych informacji
+     * @param numberOfPlayers liczba graczy ludzkich
+     * @param numberOfAi liczba sztucznych inteligencji w grze
+     */
     public void initializePlayers(int numberOfPlayers, int numberOfAi)
     {
 
@@ -77,6 +82,11 @@ public class EngineGameSpV2
         state.lastPlayerIndex = state.players.size() - 1;
     }
 
+    /**
+     * Metoda przygotowywujaca rozgrywke
+     * Pygotowywuje talie kart
+     * Rozdaje karty graczom
+     */
     public void  prepareGame()
     {
         state.table.clear();
@@ -100,6 +110,10 @@ public class EngineGameSpV2
         controllerGame.refreshScoreboard(points);
     }
 
+    /**
+     * Metoda przygotowywuje rozgrywke
+     * Karty sa dodawane do kupki i do zbioru kart
+     */
     public void prepareDeck()
     {
         state.deck.clear();

@@ -304,6 +304,11 @@ public class ControllerGameSp
             updatePlayerHand();
         }
     }
+
+    /**
+     * Odswierzanie tabeli wynikow po udanej rozgrywce
+     * @param points
+     */
     public void refreshScoreboard(int[] points)
     {
         score_board.getChildren().removeAll(score_board.getChildren());
@@ -332,6 +337,10 @@ public class ControllerGameSp
             player_position_3_vbox.getChildren().add(new Label("Player " + indexUpdatedPlayer + ":  " + handSize));
         }
     }
+
+    /**
+     * Metoda zmienia scene na sample.fxml
+     */
     @FXML
     public void switchToMainMenu()
     {

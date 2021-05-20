@@ -7,26 +7,33 @@ import java.util.Vector;
 
 public class GameStateV2
 {
+    //Wektor graczy
     Vector<Player> players;
+    //Index ostatniego gracza
     public int lastPlayerIndex;
+    //..............
     public boolean isFrozen;
+    //Stos stolu na ktory odkladane sa karty
     public Stack<ACard> table;
-
+    //Zbior kart uzytych w grze
     public Vector<ACard> cardSet;
+    //Kupka kart do gry
+    public Vector<ACard> deck;
     //public Vector<ACard> redCards;
     //public Vector<ACard> blueCards;
     //public Vector<ACard> greenCards;
     //public Vector<ACard> yellowCards;
-    public Vector<ACard> deck;
 
     //public Vector<ACard> failedCard;
+    //Rozmiary rak graczy
     public int[] playersHandsSizes;
-
+    //Kierunki
     public enum Direction
     {
         CLOCKWISE,
         COUNTERCLOCKWISE
     }
+    //
     public Direction direction = Direction.CLOCKWISE;
     public int actualPlayerIndex = 0;
     public int numberOfTakenCards = 0;
