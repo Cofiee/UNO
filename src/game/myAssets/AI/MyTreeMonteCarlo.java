@@ -3,6 +3,7 @@ package game.myAssets.AI;
 import game.myAssets.GameStateV2;
 import game.myAssets.cards.ACard;
 import game.myAssets.cards.ISpecialCard;
+import game.myAssets.cards.TakeTwoCard;
 
 import java.util.Random;
 import java.util.Vector;
@@ -178,6 +179,10 @@ public class MyTreeMonteCarlo
         }
         if(card instanceof ISpecialCard)
             cardValue += 0.5;
+        if(card instanceof TakeTwoCard)
+        {
+            //todo: wzor na prawdopodobienstwo
+        }
         if(myTreeNode.failedCard[state.actualPlayerIndex] != null && card.getColor() == myTreeNode.failedCard[state.actualPlayerIndex].getColor())
             cardValue += 1.0;
         return cardValue;

@@ -119,11 +119,6 @@ public class AIPlayer extends Player
         return !matchingCards.isEmpty();
     }
 
-    public ACard playCard()
-    {
-        return null;
-    }
-
     public ACard MCTS()
     {
         GameStateV2 aiPerspectiveState = this.state.deepClone();

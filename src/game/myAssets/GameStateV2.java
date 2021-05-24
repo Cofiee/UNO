@@ -19,15 +19,10 @@ public class GameStateV2
     public Vector<ACard> cardSet;
     //Kupka kart do gry
     public Vector<ACard> deck;
-    //public Vector<ACard> redCards;
-    //public Vector<ACard> blueCards;
-    //public Vector<ACard> greenCards;
-    //public Vector<ACard> yellowCards;
 
-    //public Vector<ACard> failedCard;
     //Rozmiary rak graczy
     public int[] playersHandsSizes;
-    //Kierunki
+    //Kierunki rozgrywki
     public enum Direction
     {
         CLOCKWISE,
@@ -44,8 +39,6 @@ public class GameStateV2
         this.table = new Stack<>();
         this.cardSet = new Vector<>();
         this.deck = new Vector<>();
-
-        //failedCard = new Vector<>();
     }
 
     public GameStateV2 deepClone()

@@ -3,33 +3,38 @@ package game;
 import MainMenu.Main;
 import game.myAssets.AI.AIPlayer;
 import game.myAssets.EngineGameSpV2;
+import game.myAssets.Player;
 import game.myAssets.cards.ACard;
-
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
-import javafx.scene.shape.Circle;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.image.Image;
+import javafx.scene.shape.Circle;
+import javafx.util.Pair;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Vector;
 
 public class ControllerGameSp
 {
     final EngineGameSpV2 engineGameSp;
 
-    public enum Mode
-    {
-        SINGLEPLAYER,
-        MULTIPLAYER
-    }
-
+    @FXML
+    AnchorPane playground;
     @FXML
     Circle top_color;
     @FXML
@@ -57,7 +62,10 @@ public class ControllerGameSp
     }
 
     @FXML
-    private void initialize() {}
+    private void initialize()
+    {
+        //player_position_1_vbox.
+    }
 
     /**
      * Metoda odpowiedzialna za rozpoczecie rozgrywki
@@ -69,6 +77,7 @@ public class ControllerGameSp
         engineGameSp.initializePlayers(numberOfHumans,numberOfAi);
         engineGameSp.prepareGame();
         updatePlayerHand();
+        updateOponentsHands();
     }
 
     /**
@@ -153,7 +162,11 @@ public class ControllerGameSp
         player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
         Vector<ACard> hand = engineGameSp.actualPlayer().getHand();
         List<ImageView> imageViews = new LinkedList<>();
-        double size = player_position_0_hbox.getWidth() / hand.size();
+        double cardWidth;
+        if(hand.size() * 140 > playground.getMinWidth())
+            cardWidth = playground.getMinWidth() / hand.size();
+        else
+            cardWidth = 140;
         int id = 0;
         for (ACard card:
                 hand)
@@ -163,8 +176,8 @@ public class ControllerGameSp
             {
                 FileInputStream inputStream = new FileInputStream(path);
                 ImageView imageView = new ImageView(new Image(inputStream));
-                imageView.setFitHeight(300.0);
-                imageView.setFitWidth(190.0);
+                imageView.setFitHeight(cardWidth * 1.58); //300
+                imageView.setFitWidth(cardWidth);
                 imageView.setId(Integer.toString(id));
                 imageView.setOnMouseClicked(new EventHandler<MouseEvent>()
                 {
@@ -183,8 +196,8 @@ public class ControllerGameSp
                     @Override
                     public void handle(MouseEvent event)
                     {
-                        imageView.setFitWidth(200);
-                        imageView.setFitHeight(310);
+                        imageView.setFitWidth(cardWidth + 10);
+                        imageView.setFitHeight(cardWidth * 1.58 + 10);
                     }
                 });
                 imageView.setOnMouseExited(new EventHandler<MouseEvent>()
@@ -192,8 +205,8 @@ public class ControllerGameSp
                     @Override
                     public void handle(MouseEvent event)
                     {
-                        imageView.setFitWidth(190);
-                        imageView.setFitHeight(300);
+                        imageView.setFitWidth(cardWidth);
+                        imageView.setFitHeight(cardWidth * 1.58);
                     }
                 });
                 imageViews.add(imageView);
@@ -212,9 +225,73 @@ public class ControllerGameSp
 
     public void updateOponentsHands()
     {
-        player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
-        player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
-        player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+        String path = "src/game/myAssets/cards/sprites/card_back_large.png";
+        try
+        {
+            FileInputStream inputStream = new FileInputStream(path);
+            Image image = new Image(inputStream);
+            int startingIndex = engineGameSp.getIActualPlayer();
+            int index = engineGameSp.getNextPlayerIndex(startingIndex);
+            Player player = engineGameSp.getPlayerAtPosition(index);
+            player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
+            Pair<Double, Double> sizeAndSpacing = computeSpacingAndSize(player.getHand().size(), 100.0);
+            player_position_1_vbox.setSpacing(sizeAndSpacing.getValue());
+            for(int i = 0; i < player.getHand().size(); ++i)
+            {
+                ImageView imageView = new ImageView(image);
+                imageView.setFitHeight(sizeAndSpacing.getKey());
+                imageView.setFitWidth(sizeAndSpacing.getKey() * 0.6);
+                imageView.setRotate(90);
+                player_position_1_vbox.getChildren().add(imageView);
+            }
+            index = engineGameSp.getNextPlayerIndex(index);
+            if(index == startingIndex) return;
+            player = engineGameSp.getPlayerAtPosition(index);
+            player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
+            sizeAndSpacing = computeSpacingAndSize(player.getHand().size(), 100.0);
+            player_position_2_hbox.setSpacing(sizeAndSpacing.getValue());
+            for(int i = 0; i < player.getHand().size(); ++i)
+            {
+                ImageView imageView = new ImageView(image);
+                imageView.setFitHeight(sizeAndSpacing.getKey());
+                imageView.setFitWidth(sizeAndSpacing.getKey() * 0.6);
+                player_position_2_hbox.getChildren().add(imageView);
+            }
+            index = engineGameSp.getNextPlayerIndex(index);
+            if(index == startingIndex) return;
+            player = engineGameSp.getPlayerAtPosition(index);
+            player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+            sizeAndSpacing = computeSpacingAndSize(player.getHand().size(), 100.0);
+            player_position_3_vbox.setSpacing(sizeAndSpacing.getValue());
+            for(int i = 0; i < player.getHand().size(); ++i)
+            {
+                ImageView imageView = new ImageView(image);
+                imageView.setFitHeight(sizeAndSpacing.getKey());
+                imageView.setFitWidth(sizeAndSpacing.getKey() * 0.6);
+                imageView.setRotate(90);
+                player_position_3_vbox.getChildren().add(imageView);
+            }
+        }
+        catch (java.io.FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sprite not found exception");
+            alert.setHeaderText("java.io.FileNotFoundException");
+            alert.setContentText(e.getMessage());
+        }
+    }
+
+    public Pair<Double, Double> computeSpacingAndSize(int numberOfElements, double maxSize)
+    {
+        if(numberOfElements < 0) return null;
+        double spacing = 0.0;
+        double objectSize = maxSize / numberOfElements;
+        if(numberOfElements > 3)
+        {
+            objectSize += numberOfElements * 10;
+            spacing += numberOfElements * -10;
+        }
+        return new Pair<Double, Double>(objectSize, spacing);
     }
 
     /**
@@ -302,6 +379,7 @@ public class ControllerGameSp
             alert.showAndWait();
             button_take_card.setDisable(false);
             updatePlayerHand();
+            updateOponentsHands();
         }
     }
 
@@ -319,6 +397,7 @@ public class ControllerGameSp
             score_board.getChildren().add(new Label("Player " + i + ":  " + point));
         }
     }
+
     public void updateHandSizes(int indexUpdatedPlayer, int handSize)
     {
         if(indexUpdatedPlayer == 1)

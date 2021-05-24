@@ -45,6 +45,27 @@ public class EngineGameSpV2
         return null;
     }
 
+    public int getNextPlayerIndex(int relativeIndex)
+    {
+        int index = relativeIndex;
+        switch (state.direction)
+        {
+            case CLOCKWISE:
+                if(index == state.lastPlayerIndex) return 0;
+                else return index += 1;
+            case COUNTERCLOCKWISE:
+                if(index == 0) return state.lastPlayerIndex;
+                else return index -=1;
+        }
+        return 0;
+    }
+
+    public Player getPlayerAtPosition(int index)
+    {
+        if(index < 0 || index > state.lastPlayerIndex) return null;
+        return state.players.get(index);
+    }
+
     public int getIActualPlayer()
     {
         return state.actualPlayerIndex;
@@ -389,7 +410,7 @@ public class EngineGameSpV2
                 }
             }
             state.playersHandsSizes[state.actualPlayerIndex] = actualPlayer().getHand().size();
-            controllerGame.updateHandSizes(state.actualPlayerIndex, state.playersHandsSizes[state.actualPlayerIndex]);
+            controllerGame.updateOponentsHands();
             do
             {
                 actualPlayer().unfreeze();
@@ -408,13 +429,11 @@ public class EngineGameSpV2
                         state.actualPlayerIndex--;
                 }
             }while (actualPlayer().isFrozen());
+            controllerGame.nextPlayerDialog();
             if(this.state.numberOfTakenCards > 0)
             {
                 takeCards();
-                controllerGame.updateHandSizes(state.actualPlayerIndex, state.playersHandsSizes[state.actualPlayerIndex]);
-                continue;
             }
-            controllerGame.nextPlayerDialog();
             if(actualPlayer() instanceof AIPlayer)
                 playAi();
         }while (actualPlayer() instanceof AIPlayer);

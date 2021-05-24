@@ -29,6 +29,8 @@ public class MyTreeNodeV2
     int myYellowCards = 0;
     int myBlackCards = 0;
 
+    int remainingTakeTwoCards = 8;
+
     /**
      * Konstruktor podstawowy tworzy wezel aktualnego stanu gry
      * @param state
@@ -39,6 +41,10 @@ public class MyTreeNodeV2
         this.myHand = myHand;
         this.topColor = state.table.peek().getColor();
         this.failedCard = new ACard[4];
+        for (ACard card: this.myHand)
+        {
+            myColorCardIncrement(card);
+        }
     }
 
     MyTreeNodeV2(MyTreeNodeV2 parentNode)
@@ -59,6 +65,13 @@ public class MyTreeNodeV2
         {
             this.playersHands.add((Vector<ACard>)hand.clone());
         }
+        for (ACard card: this.myHand)
+        {
+            myColorCardIncrement(card);
+        }
+        this.remainingTakeTwoCards = parentNode.remainingTakeTwoCards;
+        if(state.table.peek() instanceof TakeTwoCard)
+            this.remainingTakeTwoCards--;
     }
 
     public GameStateV2 getState()
@@ -183,6 +196,7 @@ public class MyTreeNodeV2
         if(card.getColor() != ACard.Color.BLACK)
             topColor = card.getColor();
         failedCard[state.actualPlayerIndex] = null;
+        myColorCardDecrement(card);
     }
 
     /**
@@ -191,6 +205,7 @@ public class MyTreeNodeV2
      * */
     private void drawOne()
     {
+        //todo: failedCard
         if(state.cardSet.size() == 0) return;
         failedCard[state.actualPlayerIndex] = state.table.peek();
         ACard takenCard = state.cardSet.remove(0);
@@ -232,6 +247,7 @@ public class MyTreeNodeV2
         }
         getActualPlayerHand().add(takenCard);
         failedCard[state.actualPlayerIndex] = state.table.peek();
+        myColorCardIncrement(takenCard);
     }
 
     private void drawMany()
@@ -250,11 +266,13 @@ public class MyTreeNodeV2
         }
         Vector<ACard> hand = getActualPlayerHand();
         hand.add(firstCard);
+        myColorCardIncrement(firstCard);
         state.numberOfTakenCards--;
         while (state.numberOfTakenCards > 0)
         {
             ACard card = state.cardSet.remove(0);
             hand.add(card);
+            myColorCardIncrement(card);
             state.numberOfTakenCards--;
         }
     }
@@ -314,5 +332,49 @@ public class MyTreeNodeV2
             return ACard.Color.GREEN;
         else
             return ACard.Color.YELLOW;
+    }
+
+    private void myColorCardIncrement(ACard card)
+    {
+        switch (card.getColor())
+        {
+            case RED:
+                myRedCards++;
+                break;
+            case BLUE:
+                myBlueCards++;
+                break;
+            case GREEN:
+                myGreenCards++;
+                break;
+            case YELLOW:
+                myYellowCards++;
+                break;
+            case BLACK:
+                myBlackCards++;
+                break;
+        }
+    }
+
+    private void myColorCardDecrement(ACard card)
+    {
+        switch (card.getColor())
+        {
+            case RED:
+                myRedCards--;
+                break;
+            case BLUE:
+                myBlueCards--;
+                break;
+            case GREEN:
+                myGreenCards--;
+                break;
+            case YELLOW:
+                myYellowCards--;
+                break;
+            case BLACK:
+                myBlackCards--;
+                break;
+        }
     }
 }
