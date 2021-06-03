@@ -28,7 +28,6 @@ public class GameStateV2
         CLOCKWISE,
         COUNTERCLOCKWISE
     }
-    //
     public Direction direction = Direction.CLOCKWISE;
     public int actualPlayerIndex = 0;
     public int numberOfTakenCards = 0;
@@ -99,6 +98,26 @@ public class GameStateV2
         }
     }
 
+    public int getNextPlayerIndex()
+    {
+        if(direction == Direction.CLOCKWISE)
+        {
+            if(actualPlayerIndex == lastPlayerIndex)
+                return 0;
+            else
+                return actualPlayerIndex + 1;
+        }
+        else
+        {
+            if (actualPlayerIndex == 0)
+                return lastPlayerIndex;
+            else
+                return actualPlayerIndex - 1;
+        }
+    }
+    /**
+     * zmien kierunek
+     */
     public void switchDirection()
     {
         if(this.direction == GameStateV2.Direction.CLOCKWISE)
@@ -107,6 +126,9 @@ public class GameStateV2
             this.direction = GameStateV2.Direction.CLOCKWISE;
     }
 
+    /**
+     * ustaw liczbe pobieranych kart
+     */
     public void setNumberOfTakenCards(int numberOfTakenCards)
     {
         this.numberOfTakenCards = numberOfTakenCards;

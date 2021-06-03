@@ -387,6 +387,7 @@ public class ControllerGameSp
      * Odswierzanie tabeli wynikow po udanej rozgrywce
      * @param points
      */
+    /*
     public void refreshScoreboard(int[] points)
     {
         score_board.getChildren().removeAll(score_board.getChildren());
@@ -397,7 +398,7 @@ public class ControllerGameSp
             score_board.getChildren().add(new Label("Player " + i + ":  " + point));
         }
     }
-
+*/
     public void updateHandSizes(int indexUpdatedPlayer, int handSize)
     {
         if(indexUpdatedPlayer == 1)

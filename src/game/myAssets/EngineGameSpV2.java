@@ -127,8 +127,6 @@ public class EngineGameSpV2
         }
         controllerGame.updateTopCard();
         controllerGame.updateColorIcon(state.table.peek().getColor());
-        int[] points = new int[4];
-        controllerGame.refreshScoreboard(points);
     }
 
     /**

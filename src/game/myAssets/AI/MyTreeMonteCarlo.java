@@ -161,6 +161,7 @@ public class MyTreeMonteCarlo
         double cardValue = 0.0;
         GameStateV2 state = myTreeNode.state;
         ACard card = state.table.peek();
+        //Licznosc koloru kary
         switch (card.getColor())
         {
             case RED:
@@ -179,13 +180,33 @@ public class MyTreeMonteCarlo
         }
         if(card instanceof ISpecialCard)
             cardValue += 0.5;
-        if(card instanceof TakeTwoCard)
+        //Liczy prawdopodobienstwo odbicia
+        if(card instanceof TakeTwoCard && myTreeNode.remainingTakeTwoCards > 0)
         {
-            //todo: wzor na prawdopodobienstwo
+            double N = 54 - myTreeNode.state.table.size();
+            double K = myTreeNode.remainingTakeTwoCards;
+            int nextPlayerIndex = myTreeNode.state.getNextPlayerIndex();
+            double n = myTreeNode.playersHands.get(nextPlayerIndex).size();
+            cardValue += cutFactorial(N, N-K) / cutFactorial(N-n, N-n-K);
         }
+        //Czy nastepny gracz nie mogl rzucic karty
         if(myTreeNode.failedCard[state.actualPlayerIndex] != null && card.getColor() == myTreeNode.failedCard[state.actualPlayerIndex].getColor())
             cardValue += 1.0;
         return cardValue;
+    }
+
+    private double cutFactorial(double firsNum, double secNum)
+    {
+        double result = 1;
+        if(secNum > firsNum)
+        {
+            double tmp = secNum;
+            secNum = firsNum;
+            firsNum = tmp;
+        }
+        for(double i = firsNum; i > secNum; i -= 0.1)
+            result *= i;
+        return result;
     }
 //*/
     /**
