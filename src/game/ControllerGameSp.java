@@ -135,7 +135,8 @@ public class ControllerGameSp
      */
     public void updateTopCard()
     {
-        String path = "src/game/myAssets/cards/sprites/"+engineGameSp.parseCard(engineGameSp.getTopCard());
+        //String path = "src/game/myAssets/cards/sprites/"+engineGameSp.parseCard(engineGameSp.getTopCard());
+        String path = "sprites/"+engineGameSp.parseCard(engineGameSp.getTopCard());
         try
         {
             FileInputStream inputStream = new FileInputStream(path);
@@ -171,7 +172,8 @@ public class ControllerGameSp
         for (ACard card:
                 hand)
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            //String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            String path = "sprites/"+engineGameSp.parseCard(card);
             try
             {
                 FileInputStream inputStream = new FileInputStream(path);
@@ -225,7 +227,8 @@ public class ControllerGameSp
 
     public void updateOponentsHands()
     {
-        String path = "src/game/myAssets/cards/sprites/card_back_large.png";
+        //String path = "src/game/myAssets/cards/sprites/card_back_large.png";
+        String path = "sprites/card_back_large.png";
         try
         {
             FileInputStream inputStream = new FileInputStream(path);
@@ -426,7 +429,7 @@ public class ControllerGameSp
     {
         try
         {
-            Main.setRoot("../MainMenu/sample.fxml");
+            Main.setRoot("/MainMenu/sample.fxml");
         }catch(IOException e)
         {
             Alert alert = new Alert(Alert.AlertType.ERROR);

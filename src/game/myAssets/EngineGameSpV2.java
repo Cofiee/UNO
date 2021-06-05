@@ -6,8 +6,6 @@ import game.myAssets.cards.*;
 import javafx.scene.control.Alert;
 
 import java.util.Collections;
-import java.util.Stack;
-import java.util.Vector;
 
 public class EngineGameSpV2
 {
@@ -463,6 +461,7 @@ public class EngineGameSpV2
        //ScoreManager scoreManager = new ScoreManager("scoreboard.txt");
        //scoreManager.saveScore(players);
     }
+
     public String parseCard(ACard card)
     {
         String fileName = new String();

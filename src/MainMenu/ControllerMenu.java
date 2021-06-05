@@ -22,7 +22,7 @@ public class ControllerMenu
         Optional<Integer> numberOfAi = numberOfAiPlayersDialog(4,1);
         if(!numberOfAi.isPresent())
             return;
-        Main.setRootGame("./game/game_board_v2.fxml", 1, numberOfAi.get());
+        Main.setRootGame("/game/game_board_v2.fxml", 1, numberOfAi.get());
     }
 
     /**
@@ -39,7 +39,7 @@ public class ControllerMenu
         Optional<Integer> numberOfAi = numberOfAiPlayersDialog(4,numberOfhumans.get());
         if(!numberOfAi.isPresent())
             return;
-        Main.setRootGame("../game/game_board_v2.fxml", numberOfhumans.get(), numberOfAi.get());
+        Main.setRootGame("/game/game_board_v2.fxml", numberOfhumans.get(), numberOfAi.get());
     }
 
     /**
@@ -49,7 +49,7 @@ public class ControllerMenu
     @FXML
     private void switchToScoreboard() throws IOException
     {
-        Main.setRoot("../scoreboard/score_board.fxml");
+        Main.setRoot("/scoreboard/score_board.fxml");
     }
 
     /**
