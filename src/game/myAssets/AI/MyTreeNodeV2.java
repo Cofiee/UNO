@@ -205,7 +205,6 @@ public class MyTreeNodeV2
      * */
     private void drawOne()
     {
-        //todo: failedCard
         if(state.cardSet.size() == 0) return;
         failedCard[state.actualPlayerIndex] = state.table.peek();
         ACard takenCard = state.cardSet.remove(0);

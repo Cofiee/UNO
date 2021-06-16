@@ -30,7 +30,7 @@ public class ControllerScoreBoard
     @FXML
     private void switchToMainMenu() throws IOException
     {
-        Main.setRoot("sample.fxml");
+        Main.setRoot("sample.fxml", 300, 200);
     }
     private void drawScoreboard()
     {

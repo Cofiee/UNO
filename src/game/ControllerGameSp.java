@@ -87,12 +87,12 @@ public class ControllerGameSp
     public ACard.Color chColorAlert()
     {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Choose color");
-        alert.setHeaderText("Choose one color by clicking on button");
-        ButtonType buttonTypeRed = new ButtonType("Red");
-        ButtonType buttonTypeBlue = new ButtonType("Blue");
-        ButtonType buttonTypeGreen = new ButtonType("Green");
-        ButtonType buttonTypeYellow = new ButtonType("Yellow");
+        alert.setTitle("");
+        alert.setHeaderText("Wybierz kolor na który chcesz zmienić");
+        ButtonType buttonTypeRed = new ButtonType("Czerwony");
+        ButtonType buttonTypeBlue = new ButtonType("Niebieski");
+        ButtonType buttonTypeGreen = new ButtonType("Zielony");
+        ButtonType buttonTypeYellow = new ButtonType("Żółty");
         alert.getButtonTypes().setAll(buttonTypeRed, buttonTypeBlue, buttonTypeGreen, buttonTypeYellow);
         Optional<ButtonType> result = alert.showAndWait();
         if(result.get() == buttonTypeRed)
@@ -309,14 +309,15 @@ public class ControllerGameSp
     {
         try
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            //String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            String path = "sprites/" + engineGameSp.parseCard(card);
             InputStream inputStream = new FileInputStream(path);
             ImageView imageView = new ImageView(new Image(inputStream));
-            final String[] options = {"Throw it", "Take it"};
+            final String[] options = {"Rzuć na stół", "Zatrzymaj w ręce"};
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setContentText("Do you woant throw it or keep it?");
+            alert.setContentText("Chcesz ją rzucić czy zatrzymać");
             alert.setGraphic(imageView);
-            alert.setTitle("Card match!");
+            alert.setTitle("Karta pasuje");
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && (result.get() == ButtonType.OK))
                 return true;
@@ -335,13 +336,14 @@ public class ControllerGameSp
     {
         try
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            //String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            String path = "sprites/" + engineGameSp.parseCard(card);
             InputStream inputStream = new FileInputStream(path);
             ImageView imageView = new ImageView(new Image(inputStream));
-            final String[] options = {"Throw it", "Take it"};
+            final String[] options = {"Rzuć na stół", "Zatrzymaj w ręce"};
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setGraphic(imageView);
-            alert.setTitle("Card match!");
+            alert.setTitle("Dobrano kartę");
             Optional<ButtonType> result = alert.showAndWait();
         }catch (java.io.FileNotFoundException e)
         {
@@ -372,13 +374,13 @@ public class ControllerGameSp
         if(engineGameSp.actualPlayer() instanceof AIPlayer)
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("It is now Computer " + (engineGameSp.getIActualPlayer()) + " turn.");
-            alert.show();
+            alert.setHeaderText("Teraz tura komputera: " + (engineGameSp.getIActualPlayer()));
+            alert.showAndWait();
         }
         else
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("It is now player " + (engineGameSp.getIActualPlayer()) + " turn.");
+            alert.setHeaderText("Teraz tura gracza: " + (engineGameSp.getIActualPlayer()));
             alert.showAndWait();
             button_take_card.setDisable(false);
             updatePlayerHand();
@@ -429,7 +431,7 @@ public class ControllerGameSp
     {
         try
         {
-            Main.setRoot("/MainMenu/sample.fxml");
+            Main.setRoot("/MainMenu/sample.fxml", 300, 200);
         }catch(IOException e)
         {
             Alert alert = new Alert(Alert.AlertType.ERROR);

@@ -9,11 +9,12 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.IOException;
+import java.util.Stack;
 
 public class Main extends Application {
 
     private static Scene scene;
-
+    private static Stage stage;
     /**
      * Metoda startowa aplikacji
      * @param primaryStage
@@ -22,10 +23,11 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception
     {
+        this.stage = primaryStage;
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.initStyle(StageStyle.DECORATED);
         primaryStage.setTitle("UNO");
-        scene = new Scene(root, 1200, 1000);
+        scene = new Scene(root, 300, 200);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -35,9 +37,11 @@ public class Main extends Application {
      * @param fxml sciezka pliku fxml sceny
      * @throws IOException
      */
-    public static void setRoot(String fxml) throws IOException
+    public static void setRoot(String fxml, double width, double height) throws IOException
     {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource(fxml));
+        stage.setWidth(width);
+        stage.setHeight(height);
         scene.setRoot(fxmlLoader.load());
     }
 
@@ -53,6 +57,8 @@ public class Main extends Application {
     {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource(fxml));
         Parent root = fxmlLoader.load();
+        stage.setWidth(1200);
+        stage.setHeight(1000);
         scene.setRoot(root);
         fxmlLoader.<ControllerGameSp>getController().startGame(numberOfHumans, numberOfAi);
     }

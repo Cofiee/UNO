@@ -70,7 +70,7 @@ public class MyTreeMonteCarlo
                 int parentVisitCount = node.visitCount;
                 int childVisitCount = child.visitCount;
                 int win = child.winCount;
-                double calcedUTC = calcUCT(win, parentVisitCount, childVisitCount);
+                double calcedUTC = calcUCB(win, parentVisitCount, childVisitCount);
                 if(calcedUTC > bestUTC)
                 {
                     bestUTC = calcedUTC;
@@ -88,7 +88,7 @@ public class MyTreeMonteCarlo
      * N is the number of times the parent node has been simulated, and
      * ni is the number of times the child node i has been visited
      * */
-    private double calcUCT(double winCount, int bigN, int ni)
+    private double calcUCB(double winCount, int bigN, int ni)
     {
         if(ni == 0)
         {

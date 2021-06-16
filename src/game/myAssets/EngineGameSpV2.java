@@ -242,7 +242,7 @@ public class EngineGameSpV2
         {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("OOPS");
-            alert.setContentText("You picked the wrong card fool!");
+            alert.setContentText("Wybrałeś niepasującą kartę, wybierz ponownie lub dobierz");
             alert.showAndWait();
             return;
         }

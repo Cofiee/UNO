@@ -49,7 +49,7 @@ public class ControllerMenu
     @FXML
     private void switchToScoreboard() throws IOException
     {
-        Main.setRoot("/scoreboard/score_board.fxml");
+        Main.setRoot("/scoreboard/score_board.fxml", 300, 200);
     }
 
     /**
