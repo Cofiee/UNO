@@ -7,21 +7,22 @@ import java.util.Vector;
 
 public class GameStateV2
 {
+    //Wektor graczy
     Vector<Player> players;
+    //Index ostatniego gracza
     public int lastPlayerIndex;
+    //..............
     public boolean isFrozen;
+    //Stos stolu na ktory odkladane sa karty
     public Stack<ACard> table;
-
+    //Zbior kart uzytych w grze
     public Vector<ACard> cardSet;
-    //public Vector<ACard> redCards;
-    //public Vector<ACard> blueCards;
-    //public Vector<ACard> greenCards;
-    //public Vector<ACard> yellowCards;
+    //Kupka kart do gry
     public Vector<ACard> deck;
 
-    //public Vector<ACard> failedCard;
+    //Rozmiary rak graczy
     public int[] playersHandsSizes;
-
+    //Kierunki rozgrywki
     public enum Direction
     {
         CLOCKWISE,
@@ -37,8 +38,6 @@ public class GameStateV2
         this.table = new Stack<>();
         this.cardSet = new Vector<>();
         this.deck = new Vector<>();
-
-        //failedCard = new Vector<>();
     }
 
     public GameStateV2 deepClone()
@@ -99,6 +98,26 @@ public class GameStateV2
         }
     }
 
+    public int getNextPlayerIndex()
+    {
+        if(direction == Direction.CLOCKWISE)
+        {
+            if(actualPlayerIndex == lastPlayerIndex)
+                return 0;
+            else
+                return actualPlayerIndex + 1;
+        }
+        else
+        {
+            if (actualPlayerIndex == 0)
+                return lastPlayerIndex;
+            else
+                return actualPlayerIndex - 1;
+        }
+    }
+    /**
+     * zmien kierunek
+     */
     public void switchDirection()
     {
         if(this.direction == GameStateV2.Direction.CLOCKWISE)
@@ -107,6 +126,9 @@ public class GameStateV2
             this.direction = GameStateV2.Direction.CLOCKWISE;
     }
 
+    /**
+     * ustaw liczbe pobieranych kart
+     */
     public void setNumberOfTakenCards(int numberOfTakenCards)
     {
         this.numberOfTakenCards = numberOfTakenCards;

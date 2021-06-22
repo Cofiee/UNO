@@ -3,6 +3,7 @@ package game.myAssets.AI;
 import game.myAssets.GameStateV2;
 import game.myAssets.cards.ACard;
 import game.myAssets.cards.ISpecialCard;
+import game.myAssets.cards.TakeTwoCard;
 
 import java.util.Random;
 import java.util.Vector;
@@ -25,7 +26,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     *  Zwraca znaleziona karte do rzucenia
+     * Zwraca znaleziona karte do rzucenia
      * @return ACard - znaleziona karta lub
      * @return null - w przypadku braku dopasowania
      */
@@ -53,7 +54,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     *
+     * Metoda dokonuje wyboru na podstawie wskaznika UCT z posrod wezlow dzieci podanego wezla
      * @param node
      * @return
      */
@@ -69,7 +70,7 @@ public class MyTreeMonteCarlo
                 int parentVisitCount = node.visitCount;
                 int childVisitCount = child.visitCount;
                 int win = child.winCount;
-                double calcedUTC = calcUCT(win, parentVisitCount, childVisitCount);
+                double calcedUTC = calcUCB(win, parentVisitCount, childVisitCount);
                 if(calcedUTC > bestUTC)
                 {
                     bestUTC = calcedUTC;
@@ -87,7 +88,7 @@ public class MyTreeMonteCarlo
      * N is the number of times the parent node has been simulated, and
      * ni is the number of times the child node i has been visited
      * */
-    private double calcUCT(double winCount, int bigN, int ni)
+    private double calcUCB(double winCount, int bigN, int ni)
     {
         if(ni == 0)
         {
@@ -123,7 +124,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     *
+     * Metoda wykorzystuje ekspercka wiedze gry w celu wybierania losowych ruchow symulacji
      * @param node
      * @return
      */
@@ -152,6 +153,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
+     * Metoda dokonuje wyboru na podstawie zmiennej losowej i aktualnego stanu gry i reki aktualnego gracza
      * @return metoda zwraca wartosc wyboru
      * */
     public double evaluate(MyTreeNodeV2 myTreeNode)
@@ -159,6 +161,7 @@ public class MyTreeMonteCarlo
         double cardValue = 0.0;
         GameStateV2 state = myTreeNode.state;
         ACard card = state.table.peek();
+        //Licznosc koloru kary
         switch (card.getColor())
         {
             case RED:
@@ -177,9 +180,33 @@ public class MyTreeMonteCarlo
         }
         if(card instanceof ISpecialCard)
             cardValue += 0.5;
+        //Liczy prawdopodobienstwo odbicia
+        if(card instanceof TakeTwoCard && myTreeNode.remainingTakeTwoCards > 0)
+        {
+            double N = 54 - myTreeNode.state.table.size();
+            double K = myTreeNode.remainingTakeTwoCards;
+            int nextPlayerIndex = myTreeNode.state.getNextPlayerIndex();
+            double n = myTreeNode.playersHands.get(nextPlayerIndex).size();
+            cardValue += cutFactorial(N, N-K) / cutFactorial(N-n, N-n-K);
+        }
+        //Czy nastepny gracz nie mogl rzucic karty
         if(myTreeNode.failedCard[state.actualPlayerIndex] != null && card.getColor() == myTreeNode.failedCard[state.actualPlayerIndex].getColor())
             cardValue += 1.0;
         return cardValue;
+    }
+
+    private double cutFactorial(double firsNum, double secNum)
+    {
+        double result = 1;
+        if(secNum > firsNum)
+        {
+            double tmp = secNum;
+            secNum = firsNum;
+            firsNum = tmp;
+        }
+        for(double i = firsNum; i > secNum; i -= 0.1)
+            result *= i;
+        return result;
     }
 //*/
     /**

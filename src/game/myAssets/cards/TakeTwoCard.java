@@ -1,7 +1,6 @@
 package game.myAssets.cards;
 
 import game.myAssets.AI.MyTreeNodeV2;
-import game.myAssets.EngineGame;
 import game.myAssets.EngineGameSpV2;
 import game.myAssets.GameStateV2;
 
@@ -18,12 +17,6 @@ public class TakeTwoCard extends ACard
         this.points = 20;
     }
 
-    @Override
-    public void action(EngineGame engineGame)
-    {
-        int numberOfTakenCards = engineGame.getNumberOfTakenCards();
-        engineGame.setNumberOfTakenCards(numberOfTakenCards + 2);
-    }
 
     public void action(EngineGameSpV2 engineGame)
     {

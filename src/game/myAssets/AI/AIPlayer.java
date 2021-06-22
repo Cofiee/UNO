@@ -11,19 +11,12 @@ import java.util.Vector;
 
 public class AIPlayer extends Player
 {
-    int myActionCards = 0;
-    int myRegularCards = 0;
-
     int myRedCards = 0;
     int myBlueCards = 0;
     int myGreenCards = 0;
     int myYellowCards = 0;
-    int myBlackCards = 0;
 
-    int nextPlayerHandSize = 0;
-    ACard opponentFailedCard = null;
-
-    Vector<ACard>matchingCards = new Vector<>();
+    Vector<ACard> matchingCards = new Vector<>();
     GameStateV2 state;
 
     public MyTreeMonteCarlo myTreeMonteCarlo;
@@ -33,49 +26,13 @@ public class AIPlayer extends Player
         this.state = state;
     }
 
-    public void scanHand()
-    {
-        myRedCards = 0;
-        myBlueCards = 0;
-        myGreenCards = 0;
-        myYellowCards = 0;
-        myBlackCards = 0;
-        for (ACard card:
-             super.hand)
-        {
-            switch (card.getColor())
-            {
-                case BLACK:
-                    myBlackCards++;
-                    break;
-                case RED:
-                    myRedCards++;
-                    break;
-                case BLUE:
-                    myBlueCards++;
-                    break;
-                case GREEN:
-                    myGreenCards++;
-                    break;
-                case YELLOW:
-                    myYellowCards++;
-                    break;
-            }
-            if(card instanceof ISpecialCard)
-                myActionCards++;
-            else
-                myRegularCards++;
-        }
-    }
-
     private Pair<ACard.Color, Integer>[] pack()
     {
         return new Pair[]{
                 new Pair<>(ACard.Color.RED, myRedCards),
                 new Pair<>(ACard.Color.BLUE, myBlueCards),
                 new Pair<>(ACard.Color.GREEN, myGreenCards),
-                new Pair<>(ACard.Color.YELLOW, myYellowCards)//,
-                //new Pair<>(ACard.Color.BLACK, myBlackCards)
+                new Pair<>(ACard.Color.YELLOW, myYellowCards)
         };
     }
 
@@ -117,11 +74,6 @@ public class AIPlayer extends Player
             }
         }
         return !matchingCards.isEmpty();
-    }
-
-    public ACard playCard()
-    {
-        return null;
     }
 
     public ACard MCTS()

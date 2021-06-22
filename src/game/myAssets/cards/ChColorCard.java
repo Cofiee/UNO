@@ -1,7 +1,6 @@
 package game.myAssets.cards;
 
 import game.myAssets.AI.MyTreeNodeV2;
-import game.myAssets.EngineGame;
 import game.myAssets.EngineGameSpV2;
 
 public class ChColorCard extends ACard
@@ -11,12 +10,6 @@ public class ChColorCard extends ACard
     {
         this.color = Color.BLACK;
         this.points = 50;
-    }
-
-    @Override
-    public void action(EngineGame engineGame)
-    {
-        this.color = engineGame.chColorAction();
     }
 
     @Override

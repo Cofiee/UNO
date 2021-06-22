@@ -3,13 +3,11 @@ package scoreboard;
 import game.myAssets.Player;
 import javafx.scene.control.Alert;
 
-import javax.imageio.IIOException;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Scanner;
-import java.util.Vector;
 
 public class ScoreManager
 {

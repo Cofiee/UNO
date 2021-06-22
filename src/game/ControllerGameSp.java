@@ -3,27 +3,38 @@ package game;
 import MainMenu.Main;
 import game.myAssets.AI.AIPlayer;
 import game.myAssets.EngineGameSpV2;
+import game.myAssets.Player;
 import game.myAssets.cards.ACard;
-
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
-import javafx.scene.shape.Circle;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.image.Image;
+import javafx.scene.shape.Circle;
+import javafx.util.Pair;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Vector;
 
 public class ControllerGameSp
 {
     final EngineGameSpV2 engineGameSp;
 
+    @FXML
+    AnchorPane playground;
     @FXML
     Circle top_color;
     @FXML
@@ -41,62 +52,47 @@ public class ControllerGameSp
     @FXML
     VBox score_board;
 
+    /**
+     * Konstruktor domyslny
+     * Tworzy silnik logiczny gry
+     */
     public ControllerGameSp()
     {
         this.engineGameSp = new EngineGameSpV2(this);
     }
+
     @FXML
-    void initialize()
+    private void initialize()
     {
-        //int playersNumber = numberOfPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER);
-        int AiNumber = numberOfAiPlayersDialog(engineGameSp.MAX_PLAYERS_NUMBER, 1);
-        engineGameSp.initializePlayers(AiNumber);
-        engineGameSp.prepareGame();
-        updatePlayerHand();
+        //player_position_1_vbox.
     }
 
     /**
-     * Wyswietla dialog z zapytaniem o liczbe graczy
-     * Zwraca wybrana liczbe graczy
-     * @param maxPlayerNumber - maksymalna liczba graczy
-     * @return
+     * Metoda odpowiedzialna za rozpoczecie rozgrywki
+     * @param numberOfHumans liczba ludzkich graczy w grze
+     * @param numberOfAi liczba sztucznych inteligencji w grze
      */
-    public int numberOfPlayersDialog(int maxPlayerNumber)
+    public void startGame(int numberOfHumans, int numberOfAi)
     {
-        List<Integer> choices = new ArrayList<>();
-        for(int i = 1; i <= maxPlayerNumber; ++i)
-        {
-            choices.add(i);
-        }
-        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(2, choices);
-        Optional<Integer> result = dialog.showAndWait();
-        return result.get();
+        engineGameSp.initializePlayers(numberOfHumans,numberOfAi);
+        engineGameSp.prepareGame();
+        updatePlayerHand();
+        updateOponentsHands();
     }
-    public int numberOfAiPlayersDialog(int maxPlayerNumber,int humansNumber)
-    {
-        List<Integer> choices = new ArrayList<>();
-        int maxAi = 4 - humansNumber;
-        int minAi = humansNumber == 1 ? 1 : 0;
-        for (int i = minAi; i <= maxAi; ++i)
-        {
-            choices.add(i);
-        }
-        ChoiceDialog<Integer> dialog = new ChoiceDialog<>(minAi, choices);
-        Optional<Integer> result = dialog.showAndWait();
-        return result.get();
-    }
-    /*
+
+    /**
      * Metoda wyswietlajaca powiadomienie o potrzebie zmiany koloru
-     * */
+     * @return ACard.Color zwraca wybrany kolor karty
+     */
     public ACard.Color chColorAlert()
     {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Choose color");
-        alert.setHeaderText("Choose one color by clicking on button");
-        ButtonType buttonTypeRed = new ButtonType("Red");
-        ButtonType buttonTypeBlue = new ButtonType("Blue");
-        ButtonType buttonTypeGreen = new ButtonType("Green");
-        ButtonType buttonTypeYellow = new ButtonType("Yellow");
+        alert.setTitle("");
+        alert.setHeaderText("Wybierz kolor na który chcesz zmienić");
+        ButtonType buttonTypeRed = new ButtonType("Czerwony");
+        ButtonType buttonTypeBlue = new ButtonType("Niebieski");
+        ButtonType buttonTypeGreen = new ButtonType("Zielony");
+        ButtonType buttonTypeYellow = new ButtonType("Żółty");
         alert.getButtonTypes().setAll(buttonTypeRed, buttonTypeBlue, buttonTypeGreen, buttonTypeYellow);
         Optional<ButtonType> result = alert.showAndWait();
         if(result.get() == buttonTypeRed)
@@ -108,9 +104,9 @@ public class ControllerGameSp
         else
             return ACard.Color.YELLOW;
     }
-    /*
+    /**
      * Metoda aktualizujaca ikone koloru gornej karty
-     * */
+     */
     public void updateColorIcon(ACard.Color myColor)
     {
         Color color;
@@ -133,12 +129,14 @@ public class ControllerGameSp
         }
         top_color.setFill(color);
     }
-    /*
+
+    /**
      * Metoda wyswietlajaca karty na szczycie stolu
-     * */
+     */
     public void updateTopCard()
     {
-        String path = "src/game/myAssets/cards/sprites/"+engineGameSp.parseCard(engineGameSp.getTopCard());
+        //String path = "src/game/myAssets/cards/sprites/"+engineGameSp.parseCard(engineGameSp.getTopCard());
+        String path = "sprites/"+engineGameSp.parseCard(engineGameSp.getTopCard());
         try
         {
             FileInputStream inputStream = new FileInputStream(path);
@@ -155,27 +153,33 @@ public class ControllerGameSp
             alert.setContentText(e.getMessage());
         }
     }
-    /*
+
+    /**
      * Metoda odpowiadajaca za wyswietlanie kart graczy w polach graczy
      * Kazda karta ma zainicjalizowany event
-     * */
+     */
     public void updatePlayerHand()
     {
         player_position_0_hbox.getChildren().removeAll(player_position_0_hbox.getChildren());
         Vector<ACard> hand = engineGameSp.actualPlayer().getHand();
         List<ImageView> imageViews = new LinkedList<>();
-        double size = player_position_0_hbox.getWidth() / hand.size();
+        double cardWidth;
+        if(hand.size() * 140 > playground.getMinWidth())
+            cardWidth = playground.getMinWidth() / hand.size();
+        else
+            cardWidth = 140;
         int id = 0;
         for (ACard card:
                 hand)
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            //String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            String path = "sprites/"+engineGameSp.parseCard(card);
             try
             {
                 FileInputStream inputStream = new FileInputStream(path);
                 ImageView imageView = new ImageView(new Image(inputStream));
-                imageView.setFitHeight(300.0);
-                imageView.setFitWidth(190.0);
+                imageView.setFitHeight(cardWidth * 1.58); //300
+                imageView.setFitWidth(cardWidth);
                 imageView.setId(Integer.toString(id));
                 imageView.setOnMouseClicked(new EventHandler<MouseEvent>()
                 {
@@ -194,8 +198,8 @@ public class ControllerGameSp
                     @Override
                     public void handle(MouseEvent event)
                     {
-                        imageView.setFitWidth(200);
-                        imageView.setFitHeight(310);
+                        imageView.setFitWidth(cardWidth + 10);
+                        imageView.setFitHeight(cardWidth * 1.58 + 10);
                     }
                 });
                 imageView.setOnMouseExited(new EventHandler<MouseEvent>()
@@ -203,8 +207,8 @@ public class ControllerGameSp
                     @Override
                     public void handle(MouseEvent event)
                     {
-                        imageView.setFitWidth(190);
-                        imageView.setFitHeight(300);
+                        imageView.setFitWidth(cardWidth);
+                        imageView.setFitHeight(cardWidth * 1.58);
                     }
                 });
                 imageViews.add(imageView);
@@ -220,34 +224,100 @@ public class ControllerGameSp
         }
         player_position_0_hbox.getChildren().addAll(imageViews);
     }
+
     public void updateOponentsHands()
     {
-        player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
-        player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
-        player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+        //String path = "src/game/myAssets/cards/sprites/card_back_large.png";
+        String path = "sprites/card_back_large.png";
+        try
+        {
+            FileInputStream inputStream = new FileInputStream(path);
+            Image image = new Image(inputStream);
+            int startingIndex = engineGameSp.getIActualPlayer();
+            int index = engineGameSp.getNextPlayerIndex(startingIndex);
+            Player player = engineGameSp.getPlayerAtPosition(index);
+            player_position_1_vbox.getChildren().removeAll(player_position_1_vbox.getChildren());
+            Pair<Double, Double> sizeAndSpacing = computeSpacingAndSize(player.getHand().size(), 100.0);
+            player_position_1_vbox.setSpacing(sizeAndSpacing.getValue());
+            for(int i = 0; i < player.getHand().size(); ++i)
+            {
+                ImageView imageView = new ImageView(image);
+                imageView.setFitHeight(sizeAndSpacing.getKey());
+                imageView.setFitWidth(sizeAndSpacing.getKey() * 0.6);
+                imageView.setRotate(90);
+                player_position_1_vbox.getChildren().add(imageView);
+            }
+            index = engineGameSp.getNextPlayerIndex(index);
+            if(index == startingIndex) return;
+            player = engineGameSp.getPlayerAtPosition(index);
+            player_position_2_hbox.getChildren().removeAll(player_position_2_hbox.getChildren());
+            sizeAndSpacing = computeSpacingAndSize(player.getHand().size(), 100.0);
+            player_position_2_hbox.setSpacing(sizeAndSpacing.getValue());
+            for(int i = 0; i < player.getHand().size(); ++i)
+            {
+                ImageView imageView = new ImageView(image);
+                imageView.setFitHeight(sizeAndSpacing.getKey());
+                imageView.setFitWidth(sizeAndSpacing.getKey() * 0.6);
+                player_position_2_hbox.getChildren().add(imageView);
+            }
+            index = engineGameSp.getNextPlayerIndex(index);
+            if(index == startingIndex) return;
+            player = engineGameSp.getPlayerAtPosition(index);
+            player_position_3_vbox.getChildren().removeAll(player_position_3_vbox.getChildren());
+            sizeAndSpacing = computeSpacingAndSize(player.getHand().size(), 100.0);
+            player_position_3_vbox.setSpacing(sizeAndSpacing.getValue());
+            for(int i = 0; i < player.getHand().size(); ++i)
+            {
+                ImageView imageView = new ImageView(image);
+                imageView.setFitHeight(sizeAndSpacing.getKey());
+                imageView.setFitWidth(sizeAndSpacing.getKey() * 0.6);
+                imageView.setRotate(90);
+                player_position_3_vbox.getChildren().add(imageView);
+            }
+        }
+        catch (java.io.FileNotFoundException e)
+        {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Sprite not found exception");
+            alert.setHeaderText("java.io.FileNotFoundException");
+            alert.setContentText(e.getMessage());
+        }
     }
-    /*
+
+    public Pair<Double, Double> computeSpacingAndSize(int numberOfElements, double maxSize)
+    {
+        if(numberOfElements < 0) return null;
+        double spacing = 0.0;
+        double objectSize = maxSize / numberOfElements;
+        if(numberOfElements > 3)
+        {
+            objectSize += numberOfElements * 10;
+            spacing += numberOfElements * -10;
+        }
+        return new Pair<Double, Double>(objectSize, spacing);
+    }
+
+    /**
      * Inicjuje dobranie jednej karty w silniku
-     * */
+     */
     public void takeOneCard()
     {
         engineGameSp.takeOne();
     }
-    /*
-     *
-     * */
+
     public boolean matchCardDialog(ACard card)
     {
         try
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            //String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            String path = "sprites/" + engineGameSp.parseCard(card);
             InputStream inputStream = new FileInputStream(path);
             ImageView imageView = new ImageView(new Image(inputStream));
-            final String[] options = {"Throw it", "Take it"};
+            final String[] options = {"Rzuć na stół", "Zatrzymaj w ręce"};
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setContentText("Do you woant throw it or keep it?");
+            alert.setContentText("Chcesz ją rzucić czy zatrzymać");
             alert.setGraphic(imageView);
-            alert.setTitle("Card match!");
+            alert.setTitle("Karta pasuje");
             Optional<ButtonType> result = alert.showAndWait();
             if(result.isPresent() && (result.get() == ButtonType.OK))
                 return true;
@@ -266,13 +336,14 @@ public class ControllerGameSp
     {
         try
         {
-            String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            //String path = "src/game/myAssets/cards/sprites/" + engineGameSp.parseCard(card);
+            String path = "sprites/" + engineGameSp.parseCard(card);
             InputStream inputStream = new FileInputStream(path);
             ImageView imageView = new ImageView(new Image(inputStream));
-            final String[] options = {"Throw it", "Take it"};
+            final String[] options = {"Rzuć na stół", "Zatrzymaj w ręce"};
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setGraphic(imageView);
-            alert.setTitle("Card match!");
+            alert.setTitle("Dobrano kartę");
             Optional<ButtonType> result = alert.showAndWait();
         }catch (java.io.FileNotFoundException e)
         {
@@ -303,18 +374,25 @@ public class ControllerGameSp
         if(engineGameSp.actualPlayer() instanceof AIPlayer)
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("It is now Computer " + (engineGameSp.getIActualPlayer()) + " turn.");
-            alert.show();
+            alert.setHeaderText("Teraz tura komputera: " + (engineGameSp.getIActualPlayer()));
+            alert.showAndWait();
         }
         else
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("It is now player " + (engineGameSp.getIActualPlayer()) + " turn.");
+            alert.setHeaderText("Teraz tura gracza: " + (engineGameSp.getIActualPlayer()));
             alert.showAndWait();
             button_take_card.setDisable(false);
             updatePlayerHand();
+            updateOponentsHands();
         }
     }
+
+    /**
+     * Odswierzanie tabeli wynikow po udanej rozgrywce
+     * @param points
+     */
+    /*
     public void refreshScoreboard(int[] points)
     {
         score_board.getChildren().removeAll(score_board.getChildren());
@@ -325,6 +403,7 @@ public class ControllerGameSp
             score_board.getChildren().add(new Label("Player " + i + ":  " + point));
         }
     }
+*/
     public void updateHandSizes(int indexUpdatedPlayer, int handSize)
     {
         if(indexUpdatedPlayer == 1)
@@ -343,12 +422,16 @@ public class ControllerGameSp
             player_position_3_vbox.getChildren().add(new Label("Player " + indexUpdatedPlayer + ":  " + handSize));
         }
     }
+
+    /**
+     * Metoda zmienia scene na sample.fxml
+     */
     @FXML
     public void switchToMainMenu()
     {
         try
         {
-            Main.setRoot("../MainMenu/sample.fxml");
+            Main.setRoot("/MainMenu/sample.fxml", 300, 200);
         }catch(IOException e)
         {
             Alert alert = new Alert(Alert.AlertType.ERROR);

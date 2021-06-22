@@ -6,8 +6,6 @@ import game.myAssets.cards.*;
 import javafx.scene.control.Alert;
 
 import java.util.Collections;
-import java.util.Stack;
-import java.util.Vector;
 
 public class EngineGameSpV2
 {
@@ -45,6 +43,27 @@ public class EngineGameSpV2
         return null;
     }
 
+    public int getNextPlayerIndex(int relativeIndex)
+    {
+        int index = relativeIndex;
+        switch (state.direction)
+        {
+            case CLOCKWISE:
+                if(index == state.lastPlayerIndex) return 0;
+                else return index += 1;
+            case COUNTERCLOCKWISE:
+                if(index == 0) return state.lastPlayerIndex;
+                else return index -=1;
+        }
+        return 0;
+    }
+
+    public Player getPlayerAtPosition(int index)
+    {
+        if(index < 0 || index > state.lastPlayerIndex) return null;
+        return state.players.get(index);
+    }
+
     public int getIActualPlayer()
     {
         return state.actualPlayerIndex;
@@ -60,23 +79,33 @@ public class EngineGameSpV2
         return state.table.peek();
     }
 
-    public void initializePlayers(int numberOfAi)
+    /**
+     * Metoda przygotowywująca graczy w grze na podstawie otrzymanych informacji
+     * @param numberOfPlayers liczba graczy ludzkich
+     * @param numberOfAi liczba sztucznych inteligencji w grze
+     */
+    public void initializePlayers(int numberOfPlayers, int numberOfAi)
     {
-        state.players.add(new Player());
-        state.playersHandsSizes = new int[state.players.size() + numberOfAi];
-        for(int i = 0; i < state.players.size(); ++i)
+
+        state.playersHandsSizes = new int[numberOfPlayers + numberOfAi];
+        for(int i = 0; i < numberOfPlayers; ++i)
         {
+            state.players.add(new Player());
             state.playersHandsSizes[i] = 7;
         }
-        for (int i = state.players.size(); i <= numberOfAi; ++i)
+        for (int i = numberOfPlayers; i <= numberOfAi; ++i)
         {
             state.players.add(new game.myAssets.AI.AIPlayer(state));
-            //state.playersHandsSizes[i] = 1;
             state.playersHandsSizes[i] = 7;
         }
         state.lastPlayerIndex = state.players.size() - 1;
     }
 
+    /**
+     * Metoda przygotowywujaca rozgrywke
+     * Pygotowywuje talie kart
+     * Rozdaje karty graczom
+     */
     public void  prepareGame()
     {
         state.table.clear();
@@ -85,20 +114,10 @@ public class EngineGameSpV2
         for(Player player : state.players)
         {
             player.getHand().clear();
-            /*////////////////////////////
-            if(player instanceof game.myAssets.AI.AIPlayer)
-            {
-                player.getHand().add(new RegularCard(1, ACard.Color.RED));
-                continue;
-            }
-            */////////////////////////////////
             for(int i = 0; i < 7; ++i)
                 player.getHand().add(state.deck.remove(0));
         }
         state.table.add(state.deck.remove(0));
-        ///////////
-        //state.table.add(new RegularCard(2, ACard.Color.RED));
-        ////////////
         while (state.table.peek() instanceof ISpecialCard)
         {
             state.deck.add(state.table.pop());
@@ -106,10 +125,12 @@ public class EngineGameSpV2
         }
         controllerGame.updateTopCard();
         controllerGame.updateColorIcon(state.table.peek().getColor());
-        int[] points = new int[4];
-        controllerGame.refreshScoreboard(points);
     }
 
+    /**
+     * Metoda przygotowywuje rozgrywke
+     * Karty sa dodawane do kupki i do zbioru kart
+     */
     public void prepareDeck()
     {
         state.deck.clear();
@@ -221,7 +242,7 @@ public class EngineGameSpV2
         {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("OOPS");
-            alert.setContentText("You picked the wrong card fool!");
+            alert.setContentText("Wybrałeś niepasującą kartę, wybierz ponownie lub dobierz");
             alert.showAndWait();
             return;
         }
@@ -385,7 +406,7 @@ public class EngineGameSpV2
                 }
             }
             state.playersHandsSizes[state.actualPlayerIndex] = actualPlayer().getHand().size();
-            controllerGame.updateHandSizes(state.actualPlayerIndex, state.playersHandsSizes[state.actualPlayerIndex]);
+            controllerGame.updateOponentsHands();
             do
             {
                 actualPlayer().unfreeze();
@@ -404,13 +425,11 @@ public class EngineGameSpV2
                         state.actualPlayerIndex--;
                 }
             }while (actualPlayer().isFrozen());
+            controllerGame.nextPlayerDialog();
             if(this.state.numberOfTakenCards > 0)
             {
                 takeCards();
-                controllerGame.updateHandSizes(state.actualPlayerIndex, state.playersHandsSizes[state.actualPlayerIndex]);
-                continue;
             }
-            controllerGame.nextPlayerDialog();
             if(actualPlayer() instanceof AIPlayer)
                 playAi();
         }while (actualPlayer() instanceof AIPlayer);
@@ -442,6 +461,7 @@ public class EngineGameSpV2
        //ScoreManager scoreManager = new ScoreManager("scoreboard.txt");
        //scoreManager.saveScore(players);
     }
+
     public String parseCard(ACard card)
     {
         String fileName = new String();

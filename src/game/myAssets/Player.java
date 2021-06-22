@@ -1,9 +1,7 @@
 package game.myAssets;
 
 import game.myAssets.cards.ACard;
-import game.myAssets.cards.TakeFourCard;
 import game.myAssets.cards.TakeTwoCard;
-import javafx.scene.Parent;
 
 import java.util.Vector;
 
