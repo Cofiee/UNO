@@ -62,7 +62,7 @@ public class MyTreeMonteCarlo
     {
         Vector<MyTreeNodeV2> children = node.children;
         MyTreeNodeV2 bestMove = children.get(0);
-        double bestUTC = Integer.MIN_VALUE;
+        double bestUCB = Integer.MIN_VALUE;
         if(children.size() > 0)
         {
             for (MyTreeNodeV2 child: children)
@@ -70,10 +70,10 @@ public class MyTreeMonteCarlo
                 int parentVisitCount = node.visitCount;
                 int childVisitCount = child.visitCount;
                 int win = child.winCount;
-                double calcedUTC = calcUCB(win, parentVisitCount, childVisitCount);
-                if(calcedUTC > bestUTC)
+                double calcedUCB = calcUCB(win, parentVisitCount, childVisitCount);
+                if(calcedUCB > bestUCB)
                 {
-                    bestUTC = calcedUTC;
+                    bestUCB = calcedUCB;
                     bestMove = child;
                 }
             }
@@ -84,18 +84,18 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     * winCount is reward value of all nodes beneath this node
-     * N is the number of times the parent node has been simulated, and
-     * ni is the number of times the child node i has been visited
+     * winCount to liczba zwyciestw elementu
+     * t to liczba wszytkich symulacji
+     * ni liczba symulacji tego elementu
      * */
-    private double calcUCB(double winCount, int bigN, int ni)
+    private double calcUCB(double winCount, int t, int ni)
     {
         if(ni == 0)
         {
             return Integer.MAX_VALUE;
         }
         double c = Math.sqrt(2.0); //state parameter
-        double rootBase = Math.log(bigN) / ni;
+        double rootBase = Math.log(t) / ni;
         return winCount / ni + c * Math.sqrt(rootBase);
     }
 
@@ -153,7 +153,7 @@ public class MyTreeMonteCarlo
     }
 
     /**
-     * Metoda dokonuje wyboru na podstawie zmiennej losowej i aktualnego stanu gry i reki aktualnego gracza
+     * Metoda ocenia wybor na podstawie wzoru klasyfikacji najlepszego wyboru
      * @return metoda zwraca wartosc wyboru
      * */
     public double evaluate(MyTreeNodeV2 myTreeNode)
@@ -195,6 +195,12 @@ public class MyTreeMonteCarlo
         return cardValue;
     }
 
+    /**
+     * Skraca silnie
+     * @param firsNum
+     * @param secNum
+     * @return
+     */
     private double cutFactorial(double firsNum, double secNum)
     {
         double result = 1;
@@ -208,9 +214,8 @@ public class MyTreeMonteCarlo
             result *= i;
         return result;
     }
-//*/
     /**
-     *
+     * Propagacja wsteczna
      * @param nodeToExplore
      * @param simulationResult
      */

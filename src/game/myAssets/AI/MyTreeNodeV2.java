@@ -12,23 +12,33 @@ import java.util.Vector;
 
 public class MyTreeNodeV2
 {
+    //Czy wezel jest konczacy
     public boolean isTerminal = false;
+    //Liczba odwiedzin
     public int visitCount = 0;
+    //Liczba zwyciestw
     public int winCount = 0;
+    //Wezel rodzic
     MyTreeNodeV2 parent = null;
+    //Stan gry
     GameStateV2 state;
+    //Tablica przechowuje karty tych graczy  którzy dobrali kartę z deku.
     ACard[] failedCard;
+    //Kolor karty na szczycie stosu kart
     ACard.Color topColor;
+    //Wektor ręki kart gracza symulującego
     Vector<ACard> myHand;
+    //Lista rąk kart wszystkich graczy w grze.
     ArrayList<Vector<ACard>> playersHands = new ArrayList<>();
+    //Wektor dzieci wezla
     Vector<MyTreeNodeV2> children = new Vector<>();
-
+    //Liczba poszczegolnych kart danego koloru w rece gracza
     int myRedCards = 0;
     int myBlueCards = 0;
     int myGreenCards = 0;
     int myYellowCards = 0;
     int myBlackCards = 0;
-
+    //Pozostale karty dobierz dwie karty
     int remainingTakeTwoCards = 8;
 
     /**
@@ -47,6 +57,10 @@ public class MyTreeNodeV2
         }
     }
 
+    /**
+     * Konstruktor kopiujacy
+     * @param parentNode
+     */
     MyTreeNodeV2(MyTreeNodeV2 parentNode)
     {
         this.isTerminal = parentNode.isTerminal;
@@ -74,16 +88,28 @@ public class MyTreeNodeV2
             this.remainingTakeTwoCards--;
     }
 
+    /**
+     * Pobierz stan gry
+     * @return
+     */
     public GameStateV2 getState()
     {
         return state;
     }
 
+    /**
+     * Pobierz kolor gornej karty
+     * @return
+     */
     public ACard.Color getTopColor()
     {
         return topColor;
     }
 
+    /**
+     * Ustaw kolor gornej karty
+     * @param topColor
+     */
     public void setTopColor(ACard.Color topColor)
     {
         this.topColor = topColor;
@@ -248,7 +274,10 @@ public class MyTreeNodeV2
         failedCard[state.actualPlayerIndex] = state.table.peek();
         myColorCardIncrement(takenCard);
     }
-
+    /**
+     * Metoda odpowiada za symulacje dobrania wielu kart w przypadku braku mozliwosci znalezienia odpowiedniego wyboru
+     * Ustawia flage failedCard
+     * */
     private void drawMany()
     {
         if(state.numberOfTakenCards <= 0) return;
@@ -299,6 +328,10 @@ public class MyTreeNodeV2
         return clonedNode;
     }
 
+    /**
+     * Pobierz najliczniejszy kolor z reki aktualnego gracza
+     * @return
+     */
     public ACard.Color getActualPlayerBestColor()
     {
         int numberOfRed = 0;
@@ -333,6 +366,10 @@ public class MyTreeNodeV2
             return ACard.Color.YELLOW;
     }
 
+    /**
+     * Zwieksza licznik kolorow
+     * @param card
+     */
     private void myColorCardIncrement(ACard card)
     {
         switch (card.getColor())
@@ -355,6 +392,10 @@ public class MyTreeNodeV2
         }
     }
 
+    /**
+     * Zmniejsza licznik kolorow
+     * @param card
+     */
     private void myColorCardDecrement(ACard card)
     {
         switch (card.getColor())

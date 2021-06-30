@@ -11,7 +11,7 @@ public class GameStateV2
     Vector<Player> players;
     //Index ostatniego gracza
     public int lastPlayerIndex;
-    //..............
+    //Czy nastepny gracz jest zamrozony
     public boolean isFrozen;
     //Stos stolu na ktory odkladane sa karty
     public Stack<ACard> table;
@@ -19,7 +19,6 @@ public class GameStateV2
     public Vector<ACard> cardSet;
     //Kupka kart do gry
     public Vector<ACard> deck;
-
     //Rozmiary rak graczy
     public int[] playersHandsSizes;
     //Kierunki rozgrywki
@@ -28,10 +27,16 @@ public class GameStateV2
         CLOCKWISE,
         COUNTERCLOCKWISE
     }
+    //Przechowuje aktualny kierunek
     public Direction direction = Direction.CLOCKWISE;
+    //Indeks aktualnego gracza
     public int actualPlayerIndex = 0;
+    //Liczba kart do wziecia przez gracza
     public int numberOfTakenCards = 0;
 
+    /**
+     * Konstruktor tworzy pusty stan gry
+     */
     public GameStateV2()
     {
         this.players = new Vector<>();
@@ -40,6 +45,10 @@ public class GameStateV2
         this.deck = new Vector<>();
     }
 
+    /**
+     * Tworzy obiekt swojego klona
+     * @return nowy obiekt GameStateV2
+     */
     public GameStateV2 deepClone()
     {
         GameStateV2 tmpState = new GameStateV2();
@@ -98,6 +107,9 @@ public class GameStateV2
         }
     }
 
+    /**
+     * @return zwraca indeks nastepnego gracza
+     */
     public int getNextPlayerIndex()
     {
         if(direction == Direction.CLOCKWISE)
